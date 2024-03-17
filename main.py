@@ -35,34 +35,34 @@ class Execution:
         trainer.evaluate_testset()
         trainer.predict_data(self.saving_path)
 
-    # def main(self):
-    #     set_start_method('spawn', force=True)
-    #     world_size = 1  # 사용 가능한 GPU 수
-    #     file_list = self.get_file_list()
-    #
-    #     for i in range(0, len(file_list), world_size):
-    #
-    #         current_batch = file_list[i:i + world_size]
-    #         processes = []
-    #         for j, file_path in enumerate(current_batch):
-    #             rank = j % world_size
-    #             p = Process(target=self.process_file, args=(rank, file_path))
-    #             p.start()
-    #             processes.append(p)
-    #
-    #         for p in processes:
-    #             p.join()
-
     def main(self):
+        set_start_method('spawn', force=True)
+        world_size = 1  # 사용 가능한 GPU 수
         file_list = self.get_file_list()
-        i = 0
-        for file in file_list:
-            i += 1
-            trainer = Run(file, self.config)
-            trainer.run_model()
-            trainer.check_validation()
-            trainer.evaluate_testset()
-            trainer.predict_data(self.saving_path)
+
+        for i in range(0, len(file_list), world_size):
+
+            current_batch = file_list[i:i + world_size]
+            processes = []
+            for j, file_path in enumerate(current_batch):
+                rank = j % world_size
+                p = Process(target=self.process_file, args=(rank, file_path))
+                p.start()
+                processes.append(p)
+
+            for p in processes:
+                p.join()
+
+    # def main(self):
+    #     file_list = self.get_file_list()
+    #     i = 0
+    #     for file in file_list:
+    #         i += 1
+    #         trainer = Run(file, self.config)
+    #         trainer.run_model()
+    #         trainer.check_validation()
+    #         trainer.evaluate_testset()
+    #         trainer.predict_data(self.saving_path)
 
 
 if __name__ == "__main__":

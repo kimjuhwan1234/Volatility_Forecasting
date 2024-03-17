@@ -1,5 +1,6 @@
-import torch.nn as nn
 from torch.nn.functional import mse_loss
+
+import torch.nn as nn
 
 
 class StackedLSTM(nn.Module):

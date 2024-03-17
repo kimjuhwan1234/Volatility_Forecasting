@@ -1,6 +1,5 @@
 from utils.Metrics import calculate_rmse_v2
 
-
 import sys
 import time
 import torch
@@ -21,8 +20,6 @@ class Transfer_Learning:
     def get_lr(self, opt):
         for param_group in opt.param_groups:
             return param_group['lr']
-
-
 
     def eval_fn(self, model, dataset_dl):
         total_loss = 0.0

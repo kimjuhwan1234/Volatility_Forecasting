@@ -1,6 +1,7 @@
-import numpy as np
 from sklearn.metrics import r2_score
 from sklearn.metrics import mean_squared_error
+
+import numpy as np
 
 
 def calculate_nd(actual_values_list, predicted_values_list):
@@ -21,6 +22,7 @@ def calculate_rmse_v2(gt, output):
     gt = gt.cpu().detach().numpy()
     rmse = np.sqrt(mean_squared_error(gt, output))
     return rmse
+
 
 def calculate_adjusted_r2_score(output, gt, n, p):
     output = output.cpu().detach().numpy()
