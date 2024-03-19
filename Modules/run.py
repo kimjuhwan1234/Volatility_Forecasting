@@ -181,7 +181,7 @@ class Run:
         print('Try prediction...')
 
         train = pd.read_csv(self.file_path, index_col=0)
-        test = train.iloc[-52:]
+        test = train.iloc[-25:-5]
         to_predict = torch.Tensor(test.values).to(self.device)
         to_predict = to_predict.unsqueeze(0)
 
