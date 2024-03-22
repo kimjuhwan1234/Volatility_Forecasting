@@ -17,7 +17,7 @@ parser.add_argument("--saving_path", type=str, default='Database', help="saving_
 parser.add_argument("--seed", type=int, default=0, help="seed")
 parser.add_argument("--num_workers", type=int, default=4, help="num_workers")
 parser.add_argument("--device", type=str, default='cuda', help="device")
-parser.add_argument("--epochs", type=int, default=1000, help="epochs")
+parser.add_argument("--epochs", type=int, default=100, help="epochs")
 parser.add_argument("--batch_size", type=int, default=64, help="batch_size")
 parser.add_argument("--lr", type=float, default=0.0003, help="learning rate")
 parser.add_argument("--patience", type=int, default=3, help="patience")

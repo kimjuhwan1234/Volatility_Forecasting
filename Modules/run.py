@@ -1,10 +1,10 @@
 from utils.Metrics import *
 from Modules.train import *
+from Modules.model import *
 from torch.optim import AdamW
 from utils.seed import seed_everything
 from torch.utils.data import DataLoader
 from Modules.dataset import CustomDataset
-from Modules.model import RegressionModel
 from sklearn.model_selection import train_test_split
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
@@ -35,9 +35,8 @@ class Run:
     def load_data(self):
         print('Loading data...')
         train = pd.read_csv(self.file_path, index_col=0)
-
+        self.test = train.iloc[-52:]
         train = train.iloc[:-52]
-        test = train.iloc[-52:]
 
         val_ratio = 0.1
 
@@ -45,12 +44,10 @@ class Run:
 
         train_dataset = CustomDataset(train_data)
         val_dataset = CustomDataset(val_data)
-        test_dataset = CustomDataset(test)
 
         dataloaders = {
             'train': DataLoader(train_dataset, batch_size=self.batch_size, shuffle=False),
             'val': DataLoader(val_dataset, batch_size=self.batch_size, shuffle=True),
-            'test': DataLoader(test_dataset, batch_size=self.batch_size, shuffle=True),
         }
         print('Finished loading data!')
         self.dataloaders = dataloaders
@@ -62,13 +59,25 @@ class Run:
         print('Training model...')
         print(' ')
 
-        model = RegressionModel(input_size=self.config['model'].input_size,
-                                hidden_size=self.config['model'].hidden_size,
-                                num_layers=self.config['model'].num_layers,
-                                output_size=self.config['model'].output_size,
-                                additional=self.config['model'].additional,
-                                bidirectional=self.config['model'].bidirectional
-                                )
+        # model = RegressionModel(input_size=self.config['model'].input_size,
+        #                         hidden_size=self.config['model'].hidden_size,
+        #                         num_layers=self.config['model'].num_layers,
+        #                         output_size=self.config['model'].output_size,
+        #                         additional=self.config['model'].additional,
+        #                         bidirectional=self.config['model'].bidirectional
+        #                         )
+
+        # model = single_biLSTM(input_size=self.config['model'].input_size,
+        #                       hidden_size=self.config['model'].hidden_size,
+        #                       num_layers=self.config['model'].num_layers,
+        #                       output_size=self.config['model'].output_size,
+        #                       additional=self.config['model'].additional,
+        #                       )
+
+        model = MLP(input_size=self.config['model'].input_size,
+                    hidden_size=self.config['model'].hidden_size,
+                    output_size=self.config['model'].output_size,
+                    )
 
         model.to(self.device)
 
@@ -130,26 +139,30 @@ class Run:
 
         print('Finished checking loss and adjusted R_square!')
 
-    def evaluate_testset(self):
+    def evaluate_testset(self, saving_path):
         print(' ')
         print('Evaluation in progress for testset...')
         TL = Transfer_Learning(self.device)
         all_predictions = []
         all_gt = []
-        i = 0
+        pred = pd.DataFrame(columns=['Predictions', 'Ground Truths'])
 
         self.model.eval()
         with ((torch.no_grad())):
-            for data, gt in self.dataloaders['test']:
-                i += 1
-                TL.plot_bar('Test', i, len(self.dataloaders['test']))
-                data = data.to(self.device)
-                gt = gt.to(self.device)
-                output = self.model(data)
+            for i in range(len(self.test) - 21):
+                TL.plot_bar('Test', i, len(self.test) - 21)
+                gt = self.test.iloc[i + 21, 0]
+                data = self.test.iloc[i:i + 20]
+                data_tensor = torch.tensor(data.values, dtype=torch.float32).unsqueeze(0)
+                data_tensor = data_tensor.to(self.device)
+                output = self.model(data_tensor)
+                output = output.cpu().detach().numpy().tolist()
 
-                all_predictions.extend(output.tolist())
-                all_gt.extend(gt.tolist())
+                all_predictions.append(output)
+                all_gt.append(gt)
 
+        pred['Predictions'] = all_predictions
+        pred['Ground Truths'] = all_gt
         all_nd = []
         all_rmse = []
         all_rou50 = []
@@ -163,10 +176,10 @@ class Run:
             rmse = calculate_rmse(ground_truth, predictions)
             rou50 = calculate_rou50(ground_truth, predictions)
             rou90 = calculate_rou90(ground_truth, predictions)
-            all_nd.append(np.mean(nd))
+            all_nd.append(nd)
             all_rmse.append(rmse)
-            all_rou50.append(np.mean(rou50))
-            all_rou90.append(np.mean(rou90))
+            all_rou50.append(rou50)
+            all_rou90.append(rou90)
 
         print(' ')
         print(f'Model: {self.weight_path}')
@@ -176,24 +189,4 @@ class Run:
         print(f'rou90: {np.mean(all_rou90):.4f}')
         print("Finished evaluation!")
 
-    def predict_data(self, saving_path):
-        print(' ')
-        print('Try prediction...')
-
-        train = pd.read_csv(self.file_path, index_col=0)
-        test = train.iloc[-25:-5]
-        to_predict = torch.Tensor(test.values).to(self.device)
-        to_predict = to_predict.unsqueeze(0)
-
-        self.model.to(self.device)
-        self.model.eval()
-        with torch.no_grad():
-            predicted = self.model(to_predict)
-        predicted = predicted.cpu().detach().numpy()
-
-        pred = pd.DataFrame(predicted, index=train.index[-5:], columns=['Prediction'])
-        pred['Ground Truth'] = train.iloc[-5:]
         pred.to_csv(f'{saving_path}/{self.weight_path[7:14]}_{self.file_path[-11:-8]}.csv')
-
-        print('Finished prediction!')
-        print(' ')
