@@ -53,15 +53,19 @@ class Execution:
     #             p.join()
 
     def main(self):
-        # file_list = self.get_file_list()
-        file_list=['Database/SP_vol.csv']
+        if self.config['model'].Transfer:
+            file_list = self.get_file_list()
+        if not self.config['model'].Transfer:
+            file_list = ['Database/SP_vol.csv']
+
         i = 0
         for file in file_list:
             i += 1
             trainer = Run(file, self.config)
             trainer.run_model()
             trainer.check_validation()
-            # trainer.evaluate_testset(self.saving_path)
+            if self.config['model'].Transfer:
+                trainer.evaluate_testset(self.saving_path)
 
 
 if __name__ == "__main__":

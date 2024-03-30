@@ -102,7 +102,6 @@ class Transfer_Learning(nn.Module):
         self.backbone = backbone
         self.backbone.load_state_dict(torch.load(backbone_weight_path))
 
-
         self.additional = additional
 
         self.additional_layer = nn.Sequential(
