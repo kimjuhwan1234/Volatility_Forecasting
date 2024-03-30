@@ -53,39 +53,75 @@ class Run:
         self.dataloaders = dataloaders
 
     def run_model(self):
-        TL = Transfer_Learning(self.device)
+        TM = Train_Module(self.device)
         self.load_data()
         print(' ')
         print('Training model...')
         print(' ')
 
-        # model = RegressionModel(input_size=self.config['model'].input_size,
-        #                         hidden_size=self.config['model'].hidden_size,
-        #                         num_layers=self.config['model'].num_layers,
-        #                         output_size=self.config['model'].output_size,
-        #                         additional=self.config['model'].additional,
-        #                         bidirectional=self.config['model'].bidirectional
-        #                         )
+        model = self.config['backbone1']
+        # model = self.config['backbone2']
+        # model = self.config['backbone3']
+        # model = self.config['backbone4']
+        # model = self.config['backbone5']
 
-        # model = single_biLSTM(input_size=self.config['model'].input_size,
-        #                       hidden_size=self.config['model'].hidden_size,
-        #                       num_layers=self.config['model'].num_layers,
-        #                       output_size=self.config['model'].output_size,
-        #                       additional=self.config['model'].additional,
-        #                       )
-
-        model = MLP(input_size=self.config['model'].input_size,
-                    hidden_size=self.config['model'].hidden_size,
-                    output_size=self.config['model'].output_size,
-                    )
+        # backbone_weight_path='Weight/Backbone/BiLSTM_SP.path'
+        # model = Transfer_Learning(self.config['backbone1'], self.config['model'].output_size,
+        #                           self.config['model'].hidden_size, self.config['model'].additional, backbone_weight_path)
 
         model.to(self.device)
 
-        if self.config['model'].additional:
-            self.weight_path = f'Weight/bi_LSTM_GRU_{self.file_path[-11:-8]}.pth'
+        if not self.config['model'].Transfer:
+            if self.config['model'].backbone1:
+                self.weight_path = f'Weight/Backbone/BiLSTM_{self.file_path[-10:-8]}.pth'
 
-        if not self.config['model'].additional:
-            self.weight_path = f'Weight/bi_LSTM_{self.file_path[-11:-8]}.pth'
+            if self.config['model'].backbone2:
+                self.weight_path = f'Weight/Backbone/DLinear_{self.file_path[-10:-8]}.pth'
+
+            if self.config['model'].backbone3:
+                self.weight_path = f'Weight/Backbone/MLP_{self.file_path[-10:-8]}.pth'
+
+            if self.config['model'].backbone4:
+                self.weight_path = f'Weight/Backbone/NBEATSx_{self.file_path[-10:-8]}.pth'
+
+            if self.config['model'].backbone5:
+                self.weight_path = f'Weight/Backbone/Prophet_{self.file_path[-10:-8]}.pth'
+
+        if self.config['model'].Transfer:
+            if self.config['model'].backbone1:
+                if self.config['model'].additional:
+                    self.weight_path = f'Weight/BiLSTM/additional_{self.file_path[-10:-8]}.pth'
+
+                if not self.config['model'].additional:
+                    self.weight_path = f'Weight/BiLSTM/additionalX_{self.file_path[-10:-8]}.pth'
+
+            if self.config['model'].backbone2:
+                if self.config['model'].additional:
+                    self.weight_path = f'Weight/DLinear/additional_{self.file_path[-10:-8]}.pth'
+
+                if not self.config['model'].additional:
+                    self.weight_path = f'Weight/DLinear/additionalX_{self.file_path[-10:-8]}.pth'
+
+            if self.config['model'].backbone3:
+                if self.config['model'].additional:
+                    self.weight_path = f'Weight/MLP/additional_{self.file_path[-10:-8]}.pth'
+
+                if not self.config['model'].additional:
+                    self.weight_path = f'Weight/MLP/additionalX_{self.file_path[-10:-8]}.pth'
+
+            if self.config['model'].backbone4:
+                if self.config['model'].additional:
+                    self.weight_path = f'Weight/NBEATSx/additional_{self.file_path[-10:-8]}.pth'
+
+                if not self.config['model'].additional:
+                    self.weight_path = f'Weight/NBEATSx/additionalX_{self.file_path[-10:-8]}.pth'
+
+            if self.config['model'].backbone5:
+                if self.config['model'].additional:
+                    self.weight_path = f'Weight/Prophet/additional_{self.file_path[-10:-8]}.pth'
+
+                if not self.config['model'].additional:
+                    self.weight_path = f'Weight/Prophet/additionalX_{self.file_path[-10:-8]}.pth'
 
         # model.load_state_dict(torch.load(self.weight_path))
 
@@ -103,7 +139,7 @@ class Run:
             'lr_scheduler': lr_scheduler,
         }
 
-        model, loss_hist, metric_hist = TL.train_and_eval(model, parameters)
+        model, loss_hist, metric_hist = TM.train_and_eval(model, parameters)
         print('Finished training model!')
 
         self.model = model
@@ -142,7 +178,7 @@ class Run:
     def evaluate_testset(self, saving_path):
         print(' ')
         print('Evaluation in progress for testset...')
-        TL = Transfer_Learning(self.device)
+        TM = Train_Module(self.device)
         all_predictions = []
         all_gt = []
         pred = pd.DataFrame(columns=['Predictions', 'Ground Truths'])
@@ -150,7 +186,7 @@ class Run:
         self.model.eval()
         with ((torch.no_grad())):
             for i in range(len(self.test) - 21):
-                TL.plot_bar('Test', i, len(self.test) - 21)
+                TM.plot_bar('Test', i, len(self.test) - 21)
                 gt = self.test.iloc[i + 21, 0]
                 data = self.test.iloc[i:i + 20]
                 data_tensor = torch.tensor(data.values, dtype=torch.float32).unsqueeze(0)
@@ -189,4 +225,8 @@ class Run:
         print(f'rou90: {np.mean(all_rou90):.4f}')
         print("Finished evaluation!")
 
-        pred.to_csv(f'{saving_path}/{self.weight_path[7:14]}_{self.file_path[-11:-8]}.csv')
+        if not self.config['model'].Transfer:
+            pred.to_csv(f'{saving_path}/Backbone_{self.file_path[-10:-8]}.csv')
+
+        if self.config['model'].Transfer:
+            pred.to_csv(f'{saving_path}/Transfer_{self.file_path[-10:-8]}.csv')
