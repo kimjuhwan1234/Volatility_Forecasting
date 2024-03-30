@@ -61,7 +61,7 @@ class Execution:
             trainer = Run(file, self.config)
             trainer.run_model()
             trainer.check_validation()
-            trainer.evaluate_testset(self.saving_path)
+            # trainer.evaluate_testset(self.saving_path)
 
 
 if __name__ == "__main__":
