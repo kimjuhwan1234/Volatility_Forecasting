@@ -9,11 +9,11 @@ parser.add_argument("--output_size", type=int, default=1, help="output_size")
 
 parser.add_argument("--additional", type=bool, default=False, help="additional")
 parser.add_argument("--bidirectional", type=bool, default=True, help="bidirectional")
-parser.add_argument("--Transfer", type=bool, default=False, help="Transfer")
+parser.add_argument("--Transfer", type=bool, default=True, help="Transfer")
 
-parser.add_argument("--backbone1", type=bool, default=False, help="biLSTM")
+parser.add_argument("--backbone1", type=bool, default=True, help="biLSTM")
 parser.add_argument("--backbone2", type=bool, default=False, help="DLinear")
-parser.add_argument("--backbone3", type=bool, default=True, help="MLP")
+parser.add_argument("--backbone3", type=bool, default=False, help="MLP")
 parser.add_argument("--backbone4", type=bool, default=False, help="NBEATSx")
 parser.add_argument("--backbone5", type=bool, default=False, help="Prophet")
 
