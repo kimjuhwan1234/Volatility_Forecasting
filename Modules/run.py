@@ -53,13 +53,7 @@ class Run:
         print('Finished loading data!')
         self.dataloaders = dataloaders
 
-    def run_model(self):
-        TM = Train_Module(self.device)
-        self.load_data()
-        print(' ')
-        print('Training model...')
-        print(' ')
-
+    def set_path(self):
         if not self.config['model'].Transfer:
             if self.config['model'].backbone1:
                 self.weight_path = f'Weight/Backbone/BiLSTM_{self.file_path[-10:-8]}.pth'
@@ -78,7 +72,6 @@ class Run:
 
         if self.config['model'].Transfer:
             if self.config['model'].backbone1:
-                backbone_weight_path = 'Weight/Backbone/BiLSTM_SP.path'
                 if self.config['model'].additional:
                     self.weight_path = f'Weight/BiLSTM/additional_{self.file_path[-10:-8]}.pth'
 
@@ -86,7 +79,6 @@ class Run:
                     self.weight_path = f'Weight/BiLSTM/additionalX_{self.file_path[-10:-8]}.pth'
 
             if self.config['model'].backbone2:
-                backbone_weight_path = 'Weight/Backbone/DLinear_SP.path'
                 if self.config['model'].additional:
                     self.weight_path = f'Weight/DLinear/additional_{self.file_path[-10:-8]}.pth'
 
@@ -94,7 +86,6 @@ class Run:
                     self.weight_path = f'Weight/DLinear/additionalX_{self.file_path[-10:-8]}.pth'
 
             if self.config['model'].backbone3:
-                backbone_weight_path = 'Weight/Backbone/MLP_SP.path'
                 if self.config['model'].additional:
                     self.weight_path = f'Weight/MLP/additional_{self.file_path[-10:-8]}.pth'
 
@@ -102,7 +93,6 @@ class Run:
                     self.weight_path = f'Weight/MLP/additionalX_{self.file_path[-10:-8]}.pth'
 
             if self.config['model'].backbone4:
-                backbone_weight_path = 'Weight/Backbone/NBEATSx_SP.path'
                 if self.config['model'].additional:
                     self.weight_path = f'Weight/NBEATSx/additional_{self.file_path[-10:-8]}.pth'
 
@@ -110,22 +100,21 @@ class Run:
                     self.weight_path = f'Weight/NBEATSx/additionalX_{self.file_path[-10:-8]}.pth'
 
             if self.config['model'].backbone5:
-                backbone_weight_path = 'Weight/Backbone/Prophet_SP.path'
                 if self.config['model'].additional:
                     self.weight_path = f'Weight/Prophet/additional_{self.file_path[-10:-8]}.pth'
 
                 if not self.config['model'].additional:
                     self.weight_path = f'Weight/Prophet/additionalX_{self.file_path[-10:-8]}.pth'
 
-        model = self.config['backbone1']
-        # model = self.config['backbone2']
-        # model = self.config['backbone3']
-        # model = self.config['backbone4']
-        # model = self.config['backbone5']
+    def run_model(self):
+        TM = Train_Module(self.device)
+        self.load_data()
+        self.set_path()
+        print(' ')
+        print('Training model...')
+        print(' ')
 
-        # model = Transfer_Learning(self.config['backbone1'], self.config['model'].output_size,
-        #                           self.config['model'].hidden_size, self.config['model'].additional, backbone_weight_path)
-
+        model = self.config['structure']
         model.to(self.device)
 
         # model.load_state_dict(torch.load(self.weight_path))
@@ -191,7 +180,7 @@ class Run:
         self.model.eval()
         with ((torch.no_grad())):
             for i in range(len(self.test) - 21):
-                TM.plot_bar('Test', i, len(self.test) - 21)
+                TM.plot_bar('Test', i, len(self.test) - 20)
                 gt = self.test.iloc[i + 21, 0]
                 data = self.test.iloc[i:i + 20]
                 data_tensor = torch.tensor(data.values, dtype=torch.float32).unsqueeze(0)

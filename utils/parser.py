@@ -11,15 +11,15 @@ parser.add_argument("--additional", type=bool, default=False, help="additional")
 parser.add_argument("--bidirectional", type=bool, default=True, help="bidirectional")
 parser.add_argument("--Transfer", type=bool, default=True, help="Transfer")
 
-parser.add_argument("--backbone1", type=bool, default=True, help="biLSTM")
+parser.add_argument("--backbone1", type=bool, default=False, help="biLSTM")
 parser.add_argument("--backbone2", type=bool, default=False, help="DLinear")
-parser.add_argument("--backbone3", type=bool, default=False, help="MLP")
+parser.add_argument("--backbone3", type=bool, default=True, help="MLP")
 parser.add_argument("--backbone4", type=bool, default=False, help="NBEATSx")
 parser.add_argument("--backbone5", type=bool, default=False, help="Prophet")
 
 opt_model = parser.parse_args()
 print(opt_model)
-# ----------------------------------------------------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------------------------------------------------#
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_saving_strategy", type=str, default='better', help="model_saving_strategy")
 parser.add_argument("--saving_path", type=str, default='Database', help="saving_path")
@@ -35,11 +35,58 @@ parser.add_argument("--use_wandb", type=bool, default=False, help="use_wandb")
 
 opt_train = parser.parse_args()
 print(opt_train)
-# ----------------------------------------------------------------------------------------------------------------------#
+# ---------------------------------------------------------------------------------------------------------------------#
 bacbone1 = single_biLSTM(input_size=opt_model.input_size, hidden_size=opt_model.hidden_size,
                          num_layers=opt_model.num_layers, output_size=opt_model.output_size)
-# ----------------------------------------------------------------------------------------------------------------------#
+bacbone3 = MLP(input_size=opt_model.input_size, hidden_size=opt_model.hidden_size, output_size=opt_model.output_size)
+# ---------------------------------------------------------------------------------------------------------------------#
 config = dict()
 config['model'] = opt_model
 config['train'] = opt_train
-config['backbone1'] = bacbone1
+
+if not opt_model.Transfer:
+    if opt_model.backbone1:
+        config['structure'] = bacbone1
+
+    if opt_model.backbone2:
+        config['structure'] = bacbone1
+
+    if opt_model.backbone3:
+        config['structure'] = bacbone3
+
+    if opt_model.backbone4:
+        config['structure'] = bacbone1
+
+    if opt_model.backbone5:
+        config['structure'] = bacbone1
+
+if opt_model.Transfer:
+    if opt_model.backbone1:
+        backbone_weight_path = 'Weight/Backbone/BiLSTM_SP.pth'
+        config['structure'] = Transfer_Learning(bacbone1, opt_model.output_size,
+                                            opt_model.hidden_size, opt_model.additional,
+                                            backbone_weight_path)
+
+    if opt_model.backbone2:
+        backbone_weight_path = 'Weight/Backbone/DLinear_SP.pth'
+        config['structure'] = Transfer_Learning(bacbone1, opt_model.output_size,
+                                            opt_model.hidden_size, opt_model.additional,
+                                            backbone_weight_path)
+
+    if opt_model.backbone3:
+        backbone_weight_path = 'Weight/Backbone/MLP_SP.pth'
+        config['structure'] = Transfer_Learning(bacbone3, opt_model.output_size,
+                                            opt_model.hidden_size, opt_model.additional,
+                                            backbone_weight_path)
+
+    if opt_model.backbone4:
+        backbone_weight_path = 'Weight/Backbone/NBEATSx_SP.pth'
+        config['structure'] = Transfer_Learning(bacbone1, opt_model.output_size,
+                                            opt_model.hidden_size, opt_model.additional,
+                                            backbone_weight_path)
+
+    if opt_model.backbone5:
+        backbone_weight_path = 'Weight/Backbone/Prophet_SP.pth'
+        config['structure'] = Transfer_Learning(bacbone1, opt_model.output_size,
+                                            opt_model.hidden_size, opt_model.additional,
+                                            backbone_weight_path)
