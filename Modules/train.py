@@ -116,7 +116,7 @@ class Train_Module:
             lr_scheduler.step(val_loss)
 
             print(f'train loss: {train_loss:.4f}, val loss: {val_loss:.4f}')
-            print(f'adjusted_R_square: {val_accuracy:.4f} , time: {(time.time() - start_time) / 60:.2f}')
+            print(f'RMSE: {val_accuracy:.4f} , time: {(time.time() - start_time) / 60:.2f}')
 
             print(' ')
 
