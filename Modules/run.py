@@ -42,7 +42,11 @@ class Run:
 
         if not self.config['model'].Transfer:
             train_data = train.loc[:'2012-01-01']
-            val_data = train.loc['2012-01-01':]
+            val_data = train.loc['2012-01-01':'2013-01-01']
+            test_data = train.loc['2013-01-01':]
+            test_dataset = TestDataset(test_data)
+            self.test_dl = DataLoader(test_dataset, batch_size=1, shuffle=False)
+            self.test_index = test_data.index[len(test_data)-len(self.test_dl):]
 
         train_dataset = CustomDataset(train_data)
         val_dataset = CustomDataset(val_data)
@@ -58,6 +62,7 @@ class Run:
         if not self.config['model'].Transfer:
             if self.config['model'].backbone1:
                 self.weight_path = f'Weight/Backbone/BiLSTM_{self.file_path[-10:-8]}.pth'
+                self.saving_path = f'Files/Backbone_{self.file_path[-10:-8]}.csv'
 
             if self.config['model'].backbone2:
                 self.weight_path = f'Weight/Backbone/DLinear_{self.file_path[-10:-8]}.pth'
@@ -182,6 +187,8 @@ class Run:
         print(' ')
         print('Evaluation in progress for testset...')
         TM = Train_Module(self.device)
+        self.load_data()
+        self.set_path()
         all_predictions = []
         all_gt = []
         pred = pd.DataFrame(columns=['Predictions', 'Ground Truths'])
@@ -221,6 +228,6 @@ class Run:
         print(f'RMSE: {rmse:.4f}')
         print(f'adjusted-R^2: {ad_r2:.4f}')
         print("Finished evaluation!")
-
+        pred.to_csv(self.saving_path)
         if self.config['model'].Transfer:
             pred.to_csv(self.saving_path)
