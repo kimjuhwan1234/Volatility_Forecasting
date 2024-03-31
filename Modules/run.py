@@ -74,47 +74,47 @@ class Run:
             if self.config['model'].backbone1:
                 if self.config['model'].additional:
                     self.weight_path = f'Weight/BiLSTM/additional_{self.file_path[-10:-8]}.pth'
-                    self.saving_path = f'Files/BiLSTM/additional_{self.file_path[-10:-8]}.pth'
+                    self.saving_path = f'Files/BiLSTM/additional_{self.file_path[-10:-8]}.csv'
 
                 if not self.config['model'].additional:
                     self.weight_path = f'Weight/BiLSTM/additionalX_{self.file_path[-10:-8]}.pth'
-                    self.saving_path = f'Files/BiLSTM/additionalX_{self.file_path[-10:-8]}.pth'
+                    self.saving_path = f'Files/BiLSTM/additionalX_{self.file_path[-10:-8]}.csv'
 
             if self.config['model'].backbone2:
                 if self.config['model'].additional:
                     self.weight_path = f'Weight/DLinear/additional_{self.file_path[-10:-8]}.pth'
-                    self.saving_path = f'Files/DLinear/additional_{self.file_path[-10:-8]}.pth'
+                    self.saving_path = f'Files/DLinear/additional_{self.file_path[-10:-8]}.csv'
 
                 if not self.config['model'].additional:
                     self.weight_path = f'Weight/DLinear/additionalX_{self.file_path[-10:-8]}.pth'
-                    self.saving_path = f'Files/DLinear/additionalX_{self.file_path[-10:-8]}.pth'
+                    self.saving_path = f'Files/DLinear/additionalX_{self.file_path[-10:-8]}.csv'
 
             if self.config['model'].backbone3:
                 if self.config['model'].additional:
                     self.weight_path = f'Weight/MLP/additional_{self.file_path[-10:-8]}.pth'
-                    self.saving_path = f'Files/MLP/additional_{self.file_path[-10:-8]}.pth'
+                    self.saving_path = f'Files/MLP/additional_{self.file_path[-10:-8]}.csv'
 
                 if not self.config['model'].additional:
                     self.weight_path = f'Weight/MLP/additionalX_{self.file_path[-10:-8]}.pth'
-                    self.saving_path = f'Files/MLP/additionalX_{self.file_path[-10:-8]}.pth'
+                    self.saving_path = f'Files/MLP/additionalX_{self.file_path[-10:-8]}.csv'
 
             if self.config['model'].backbone4:
                 if self.config['model'].additional:
                     self.weight_path = f'Weight/NBEATSx/additional_{self.file_path[-10:-8]}.pth'
-                    self.saving_path = f'Files/NBEATSx/additional_{self.file_path[-10:-8]}.pth'
+                    self.saving_path = f'Files/NBEATSx/additional_{self.file_path[-10:-8]}.csv'
 
                 if not self.config['model'].additional:
                     self.weight_path = f'Weight/NBEATSx/additionalX_{self.file_path[-10:-8]}.pth'
-                    self.saving_path = f'Files/NBEATSx/additionalX_{self.file_path[-10:-8]}.pth'
+                    self.saving_path = f'Files/NBEATSx/additionalX_{self.file_path[-10:-8]}.csv'
 
             if self.config['model'].backbone5:
                 if self.config['model'].additional:
                     self.weight_path = f'Weight/Prophet/additional_{self.file_path[-10:-8]}.pth'
-                    self.saving_path = f'Files/Prophet/additional_{self.file_path[-10:-8]}.pth'
+                    self.saving_path = f'Files/Prophet/additional_{self.file_path[-10:-8]}.csv'
 
                 if not self.config['model'].additional:
                     self.weight_path = f'Weight/Prophet/additionalX_{self.file_path[-10:-8]}.pth'
-                    self.saving_path = f'Files/Prophet/additionalX_{self.file_path[-10:-8]}.pth'
+                    self.saving_path = f'Files/Prophet/additionalX_{self.file_path[-10:-8]}.csv'
 
     def run_model(self):
         TM = Train_Module(self.device)
@@ -126,8 +126,6 @@ class Run:
 
         model = self.config['structure']
         model.to(self.device)
-
-        # model.load_state_dict(torch.load(self.weight_path))
 
         opt = AdamW(model.parameters(), lr=self.lr)
         lr_scheduler = ReduceLROnPlateau(opt, mode='min', factor=0.2, patience=self.config['train'].patience)
@@ -186,6 +184,11 @@ class Run:
         all_predictions = []
         all_gt = []
         pred = pd.DataFrame(columns=['Predictions', 'Ground Truths'])
+
+        # Needed to load weights after model training and test them later.
+        self.model = self.config['structure']
+        self.model.load_state_dict(torch.load(self.weight_path))
+        self.model.to(self.device)
 
         self.model.eval()
         with ((torch.no_grad())):

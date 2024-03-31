@@ -96,11 +96,10 @@ class MLP(nn.Module):
 
 
 class Transfer_Learning(nn.Module):
-    def __init__(self, backbone, output_size, hidden_size, additional, backbone_weight_path):
+    def __init__(self, backbone, output_size, hidden_size, additional):
         super(Transfer_Learning, self).__init__()
 
         self.backbone = backbone
-        self.backbone.load_state_dict(torch.load(backbone_weight_path))
 
         self.additional = additional
 
@@ -115,6 +114,9 @@ class Transfer_Learning(nn.Module):
         output = self.backbone(train)
 
         if self.additional:
+            if output.size() == torch.Size([]):
+                output=output.unsqueeze(0)
+            output=output.unsqueeze(dim=1)
             output = self.additional_layer(output)
 
         output = output.squeeze()
