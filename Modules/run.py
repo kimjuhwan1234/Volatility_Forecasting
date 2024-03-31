@@ -1,11 +1,9 @@
 from utils.Metrics import *
 from Modules.train import *
-from Modules.model import *
 from torch.optim import AdamW
 from utils.seed import seed_everything
 from torch.utils.data import DataLoader
-from Modules.dataset import CustomDataset
-from sklearn.model_selection import train_test_split
+from Modules.dataset import CustomDataset, TestDataset
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 import torch
@@ -26,7 +24,6 @@ class Run:
         self.seed = self.config['train'].seed
         self.device = self.config['train'].device
         self.num_workers = self.config['train'].num_workers
-        self.saving_path = self.config['train'].saving_path
         self.model_saving_strategy = self.config['train'].model_saving_strategy
 
         # Seed everything
@@ -38,7 +35,10 @@ class Run:
         if self.config['model'].Transfer:
             train_data = train.loc[:'2021-01-01']
             val_data = train.loc['2021-01-01':'2023-01-01']
-            self.test = train.loc['2023-01-01':]
+            test_data = train.loc['2023-01-01':]
+            test_dataset = TestDataset(test_data)
+            self.test_dl = DataLoader(test_dataset, batch_size=1, shuffle=False)
+            self.test_index = test_data.index[len(test_data) - len(self.test_dl):]
         if not self.config['model'].Transfer:
             train_data = train.loc[:'2012-01-01']
             val_data = train.loc['2012-01-01':]
@@ -48,7 +48,7 @@ class Run:
 
         dataloaders = {
             'train': DataLoader(train_dataset, batch_size=self.batch_size, shuffle=False),
-            'val': DataLoader(val_dataset, batch_size=self.batch_size, shuffle=True),
+            'val': DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False),
         }
         print('Finished loading data!')
         self.dataloaders = dataloaders
@@ -74,37 +74,47 @@ class Run:
             if self.config['model'].backbone1:
                 if self.config['model'].additional:
                     self.weight_path = f'Weight/BiLSTM/additional_{self.file_path[-10:-8]}.pth'
+                    self.saving_path = f'Files/BiLSTM/additional_{self.file_path[-10:-8]}.pth'
 
                 if not self.config['model'].additional:
                     self.weight_path = f'Weight/BiLSTM/additionalX_{self.file_path[-10:-8]}.pth'
+                    self.saving_path = f'Files/BiLSTM/additionalX_{self.file_path[-10:-8]}.pth'
 
             if self.config['model'].backbone2:
                 if self.config['model'].additional:
                     self.weight_path = f'Weight/DLinear/additional_{self.file_path[-10:-8]}.pth'
+                    self.saving_path = f'Files/DLinear/additional_{self.file_path[-10:-8]}.pth'
 
                 if not self.config['model'].additional:
                     self.weight_path = f'Weight/DLinear/additionalX_{self.file_path[-10:-8]}.pth'
+                    self.saving_path = f'Files/DLinear/additionalX_{self.file_path[-10:-8]}.pth'
 
             if self.config['model'].backbone3:
                 if self.config['model'].additional:
                     self.weight_path = f'Weight/MLP/additional_{self.file_path[-10:-8]}.pth'
+                    self.saving_path = f'Files/MLP/additional_{self.file_path[-10:-8]}.pth'
 
                 if not self.config['model'].additional:
                     self.weight_path = f'Weight/MLP/additionalX_{self.file_path[-10:-8]}.pth'
+                    self.saving_path = f'Files/MLP/additionalX_{self.file_path[-10:-8]}.pth'
 
             if self.config['model'].backbone4:
                 if self.config['model'].additional:
                     self.weight_path = f'Weight/NBEATSx/additional_{self.file_path[-10:-8]}.pth'
+                    self.saving_path = f'Files/NBEATSx/additional_{self.file_path[-10:-8]}.pth'
 
                 if not self.config['model'].additional:
                     self.weight_path = f'Weight/NBEATSx/additionalX_{self.file_path[-10:-8]}.pth'
+                    self.saving_path = f'Files/NBEATSx/additionalX_{self.file_path[-10:-8]}.pth'
 
             if self.config['model'].backbone5:
                 if self.config['model'].additional:
                     self.weight_path = f'Weight/Prophet/additional_{self.file_path[-10:-8]}.pth'
+                    self.saving_path = f'Files/Prophet/additional_{self.file_path[-10:-8]}.pth'
 
                 if not self.config['model'].additional:
                     self.weight_path = f'Weight/Prophet/additionalX_{self.file_path[-10:-8]}.pth'
+                    self.saving_path = f'Files/Prophet/additionalX_{self.file_path[-10:-8]}.pth'
 
     def run_model(self):
         TM = Train_Module(self.device)
@@ -169,7 +179,7 @@ class Run:
 
         print('Finished checking loss and adjusted R_square!')
 
-    def evaluate_testset(self, saving_path):
+    def evaluate_testset(self):
         print(' ')
         print('Evaluation in progress for testset...')
         TM = Train_Module(self.device)
@@ -179,48 +189,34 @@ class Run:
 
         self.model.eval()
         with ((torch.no_grad())):
-            for i in range(len(self.test) - 21):
-                TM.plot_bar('Test', i, len(self.test) - 20)
-                gt = self.test.iloc[i + 21, 0]
-                data = self.test.iloc[i:i + 20]
-                data_tensor = torch.tensor(data.values, dtype=torch.float32).unsqueeze(0)
-                data_tensor = data_tensor.to(self.device)
-                output = self.model(data_tensor)
+            i = 0
+            for X_train, gt in self.test_dl:
+                i += 1
+                TM.plot_bar('Test', i, len(self.test_dl))
+                X_train = X_train.to(self.device)
+                output = self.model(X_train)
                 output = output.cpu().detach().numpy().tolist()
+                gt = gt.squeeze().detach().numpy().tolist()
 
                 all_predictions.append(output)
                 all_gt.append(gt)
 
         pred['Predictions'] = all_predictions
         pred['Ground Truths'] = all_gt
-        all_nd = []
-        all_rmse = []
-        all_rou50 = []
-        all_rou90 = []
+        pred.index = self.test_index
 
-        for i in range(len(all_predictions)):
-            predictions = all_predictions[i]
-            ground_truth = all_gt[i]
-
-            nd = calculate_nd(ground_truth, predictions)
-            rmse = calculate_rmse(ground_truth, predictions)
-            rou50 = calculate_rou50(ground_truth, predictions)
-            rou90 = calculate_rou90(ground_truth, predictions)
-            all_nd.append(nd)
-            all_rmse.append(rmse)
-            all_rou50.append(rou50)
-            all_rou90.append(rou90)
+        nd = calculate_nd(all_gt, all_predictions)
+        mae = calculate_mae(all_gt, all_predictions)
+        rmse = calculate_rmse(all_gt, all_predictions)
+        ad_r2 = calculate_adjusted_r2_score(all_gt, all_predictions, 20, 2)
 
         print(' ')
         print(f'Model: {self.weight_path}')
-        print(f'ND: {np.mean(all_nd):.4f}')
-        print(f'RMSE: {np.mean(all_rmse):.4f}')
-        print(f'rou50: {np.mean(all_rou50):.4f}')
-        print(f'rou90: {np.mean(all_rou90):.4f}')
+        print(f'ND: {nd:.4f}')
+        print(f'MAE: {mae:.4f}')
+        print(f'RMSE: {rmse:.4f}')
+        print(f'adjusted-R^2: {ad_r2:.4f}')
         print("Finished evaluation!")
 
-        if not self.config['model'].Transfer:
-            pred.to_csv(f'{saving_path}/Backbone_{self.file_path[-10:-8]}.csv')
-
         if self.config['model'].Transfer:
-            pred.to_csv(f'{saving_path}/Transfer_{self.file_path[-10:-8]}.csv')
+            pred.to_csv(self.saving_path)

@@ -22,7 +22,6 @@ print(opt_model)
 # ---------------------------------------------------------------------------------------------------------------------#
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_saving_strategy", type=str, default='better', help="model_saving_strategy")
-parser.add_argument("--saving_path", type=str, default='Database', help="saving_path")
 parser.add_argument("--seed", type=int, default=0, help="seed")
 parser.add_argument("--num_workers", type=int, default=4, help="num_workers")
 parser.add_argument("--device", type=str, default='cuda', help="device")

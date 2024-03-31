@@ -32,7 +32,7 @@ class Execution:
         trainer = Run(file, self.config)
         trainer.run_model()
         trainer.check_validation()
-        trainer.evaluate_testset(self.saving_path)
+        trainer.evaluate_testset()
 
     # def main(self):
     #     set_start_method('spawn', force=True)
@@ -65,7 +65,7 @@ class Execution:
             trainer.run_model()
             trainer.check_validation()
             if self.config['model'].Transfer:
-                trainer.evaluate_testset(self.saving_path)
+                trainer.evaluate_testset()
 
 
 if __name__ == "__main__":
