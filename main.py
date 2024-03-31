@@ -69,5 +69,5 @@ class Execution:
 
 
 if __name__ == "__main__":
-    E = Execution('Database/oil_std', 'Files')
+    E = Execution('Database/oil_std', None)
     E.main()
