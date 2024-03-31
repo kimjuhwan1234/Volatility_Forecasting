@@ -1,6 +1,6 @@
 from utils.Metrics import *
 from Modules.train import *
-from torch.optim import AdamW
+from torch.optim import Adam
 from utils.seed import seed_everything
 from torch.utils.data import DataLoader
 from Modules.dataset import CustomDataset, TestDataset
@@ -133,7 +133,7 @@ class Run:
         model = self.config['structure']
         model.to(self.device)
 
-        opt = AdamW(model.parameters(), lr=self.lr)
+        opt = Adam(model.parameters(), lr=self.lr)
         lr_scheduler = ReduceLROnPlateau(opt, mode='min', factor=0.2, patience=self.config['train'].patience)
 
         parameters = {

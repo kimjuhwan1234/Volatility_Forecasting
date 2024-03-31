@@ -41,7 +41,7 @@ class StackedLSTM(nn.Module):
         # 출력을 위한 선형 레이어
         out = self.fc(out)
 
-        out = out[:, :1, :]
+        out = out[:, -1, :]
 
         return out
 
@@ -51,7 +51,7 @@ class single_biLSTM(nn.Module):
         super(single_biLSTM, self).__init__()
 
         self.backbone = nn.LSTM(input_size, hidden_size, num_layers=num_layers,
-                                bidirectional=True, dropout=0.1, batch_first=True)
+                                bidirectional=True, batch_first=True)
 
         # 출력을 위한 선형 레이어
         self.fc = nn.Linear(hidden_size * 2, output_size)
@@ -59,13 +59,13 @@ class single_biLSTM(nn.Module):
     def forward(self, train, gt=None):
         out, _ = self.backbone(train)
         out = self.fc(out)
-        output = out[:, :1, :]
+        output = out[:, -1, :]
 
         output = output.squeeze()
 
         if gt != None:
             gt = gt.squeeze()
-            loss = mse_loss(output, gt)
+            loss = torch.sqrt(mse_loss(output, gt))
             return output, loss
 
         return output
@@ -84,12 +84,12 @@ class MLP(nn.Module):
 
     def forward(self, train, gt=None):
         output = self.MLP(train)
-        output = output[:, :1, :]
+        output = output[:, -1, :]
         output = output.squeeze()
 
         if gt != None:
             gt = gt.squeeze()
-            loss = mse_loss(output, gt)
+            loss = torch.sqrt(mse_loss(output, gt))
             return output, loss
 
         return output
@@ -123,7 +123,7 @@ class Transfer_Learning(nn.Module):
 
         if gt != None:
             gt = gt.squeeze()
-            loss = mse_loss(output, gt)
+            loss = torch.sqrt(mse_loss(output, gt))
             return output, loss
 
         return output
