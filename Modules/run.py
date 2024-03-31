@@ -151,7 +151,7 @@ class Run:
 
     def check_validation(self):
         print(' ')
-        print('Check loss and adjusted_R_square...')
+        print('Check loss and RMSE...')
 
         loss_hist_numpy = self.loss_hist.map(
             lambda x: x.cpu().detach().numpy() if isinstance(x, torch.Tensor) else x)
@@ -168,15 +168,15 @@ class Run:
         plt.show()
 
         # plot accuracy progress
-        plt.title("Train-Val adjusted_R_square")
+        plt.title("Train-Val RMSE")
         plt.plot(range(1, self.epochs + 1), metric_hist_numpy.iloc[:, 0], label="train")
         plt.plot(range(1, self.epochs + 1), metric_hist_numpy.iloc[:, 1], label="val")
-        plt.ylabel("adjusted_R_square")
+        plt.ylabel("RMSE")
         plt.xlabel("Training Epochs")
         plt.legend()
         plt.show()
 
-        print('Finished checking loss and adjusted R_square!')
+        print('Finished checking loss and RMSE!')
 
     def evaluate_testset(self):
         print(' ')
