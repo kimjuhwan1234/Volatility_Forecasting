@@ -115,8 +115,8 @@ class Transfer_Learning(nn.Module):
 
         if self.additional:
             if output.size() == torch.Size([]):
-                output=output.unsqueeze(0)
-            output=output.unsqueeze(dim=1)
+                output = output.unsqueeze(0)
+            output = output.unsqueeze(dim=1)
             output = self.additional_layer(output)
 
         output = output.squeeze()

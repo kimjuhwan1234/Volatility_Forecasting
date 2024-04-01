@@ -42,7 +42,7 @@ class Run:
 
         if not self.config['model'].Transfer:
             train_data = train.loc[:'2012-01-01']
-            val_data = train.loc['2012-01-01':'2013-01-01']
+            val_data = train.loc['2012-01-01':]
             test_data = train.loc['2013-01-01':]
             test_dataset = TestDataset(test_data)
             self.test_dl = DataLoader(test_dataset, batch_size=1, shuffle=False)
@@ -229,5 +229,5 @@ class Run:
         print(f'adjusted-R^2: {ad_r2:.4f}')
         print("Finished evaluation!")
         pred.to_csv(self.saving_path)
-        if self.config['model'].Transfer:
-            pred.to_csv(self.saving_path)
+        # if self.config['model'].Transfer:
+        #     pred.to_csv(self.saving_path)
