@@ -5,6 +5,7 @@ from multiprocessing import set_start_method, Process
 
 import os
 import torch
+import time
 
 
 class Execution:
@@ -30,7 +31,7 @@ class Execution:
         self.setup(rank)
 
         trainer = Run(file, self.config)
-        trainer.run_model()
+        trainer.run_model(False)
         trainer.check_validation()
         trainer.evaluate_testset()
 
@@ -56,14 +57,15 @@ class Execution:
         if self.config['model'].Transfer:
             file_list = self.get_file_list()
         if not self.config['model'].Transfer:
-            file_list = ['Database/SP_vol.csv']
+            file_list = ['Database/spot_vol/SP_vol.csv']
 
-        i = 0
         for file in file_list:
-            i += 1
+            print('')
+            print(f'{file} will be started...')
+            time.sleep(5)
             trainer = Run(file, self.config)
-            trainer.run_model()
-            trainer.check_validation()
+            # trainer.run_model(False)
+            # trainer.check_validation()
             trainer.evaluate_testset()
 
 
