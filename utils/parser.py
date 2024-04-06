@@ -8,6 +8,7 @@ parser.add_argument("--num_layers", type=int, default=2, help="num_layers")
 parser.add_argument("--output_size", type=int, default=1, help="output_size")
 parser.add_argument("--bidirectional", type=bool, default=True, help="bidirectional")
 
+parser.add_argument("--retrain", type=bool, default=True, help="retrain")
 parser.add_argument("--Transfer", type=bool, default=True, help="Transfer")
 parser.add_argument("--additional", type=bool, default=False, help="additional")
 

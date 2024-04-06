@@ -14,12 +14,11 @@ import matplotlib.pyplot as plt
 
 class Run:
     def __init__(self, file_path, config):
-        seed_everything(self.seed)
-        self.seed = self.config['train'].seed
-
         self.config = config
         self.file_path = file_path
         self.lr = self.config['train'].lr
+        self.seed = self.config['train'].seed
+        seed_everything(self.seed)
 
         self.epochs = self.config['train'].epochs
         self.device = self.config['train'].device
@@ -43,6 +42,7 @@ class Run:
 
             if self.config['model'].backbone5:
                 self.weight_path = f'Weight/Backbone/Prophet_{self.file_path[-10:-8]}.pth'
+
         if self.config['model'].Transfer:
             if self.config['model'].backbone1:
                 if self.config['model'].additional:
@@ -94,24 +94,11 @@ class Run:
 
         # 처음 훈련할 때 load_data 설정.
         if not retraining:
-            # Transfer Learning을 할때는 코로나를 반영하기 위해 2015년 부터 2020년 까지를 훈련데이터로 씀.
-            if self.config['model'].Transfer:
-                # 전처리에서 애초에 2015년부터 시작하게 해둠.
-                train_data = self.train.loc[:'2021-01-01']
-                # valindation은 2년을 진행하는데, 2023-01-01이 아니라 2022-11-01인 이유는 if retraining에서 설명하겠음.
-                # 참고로 test set은 2023-01-01부터 시작함.
-                val_data = self.train.loc['2021-01-01':'2022-11-01']
-                train_dataset = CustomDataset(train_data)
-                val_dataset = CustomDataset(val_data)
-                dataloaders = {
-                    'train': DataLoader(train_dataset, batch_size=self.batch_size, shuffle=False),
-                    'val': DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False),
-                }
-            # Backbone 훈련을 위한 설정 1986년 부터 2011년 까지를 훈련데이터로 씀
+            # Backbone 훈련을 위한 설정. 1986년 부터 1999년 까지를 훈련데이터로 씀
             if not self.config['model'].Transfer:
-                train_data = self.train.loc[:'2012-01-01']
-                # 2012년부터 2014년 까지가 validation. 전처리에서 애초에 2014년 12월에 끝나게 해둠.
-                val_data = self.train.loc['2012-01-01':]
+                train_data = self.train.loc[:'1999-01-01']
+                # 1999년부터 2000년 까지가 validation. 전처리에서 애초에 2000년 12월에 끝나게 해둠.
+                val_data = self.train.loc['1999-01-01':]
                 train_dataset = CustomDataset(train_data)
                 val_dataset = CustomDataset(val_data)
                 dataloaders = {
@@ -119,19 +106,23 @@ class Run:
                     'val': DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False),
                 }
 
+            # Transfer Learning을 위한 설정.
+            if self.config['model'].Transfer:
+                # 전처리에서 애초에 2001년부터 시작하게 해둠. 총 4년 훈련
+                train_data = self.train.loc[:'2005-01-01']
+                # 1년 validation
+                val_data = self.train.loc['2005-01-01':'2006-01-01']
+                train_dataset = CustomDataset(train_data)
+                val_dataset = CustomDataset(val_data)
+                dataloaders = {
+                    'train': DataLoader(train_dataset, batch_size=self.batch_size, shuffle=False),
+                    'val': DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False),
+                }
+
+        # retraining 할때 설정.
         if retraining:
-            '''위에서 전이학습 validation을 2023-01-01이 아니라 2022-01-01로 한 이유는 다음과 같음. 만약 2023-01-01까지
-            validation을 진행하면 첫 60일 예측 이후 retraining에 이용할 data size는 무조건 2023-01-01부터 시작해야 함.(미래참조이슈)
-            그럼 data size가 60이 되고 60*0.2=12인데 이것은 retraining에 이용할 val_dataset window_size보다 작음.그래서 
-            2022-11-01까지를 validation으로 이용하고 retrain에 이용할 data size가 103*0.2>20 이 되게 하여 오류가 안나게 함.
-            
-            train val split을 0.2로 안하고 더 늘리거나, retrain 주기를 처음부터 100이상으로 하는 방법도 있음. 전자의 경우는 train
-            set의 크기가 줄어 예측성능이 엉망이 되는 것을 확인함. 현재 retrain 주기는 60인데 이때의 예측성능도 retrain을 하지 않았을 때
-            보다 안좋아서 retrain 주기를 100이상으로 늘릴 것을 고민 중임. 그러면 validation을 2023-01-01까지 해도 됨.
-            
-            self.test_index는 밑에서 저장되는데, retrain 주기만큼의 예측이 끊났을 때 마지막 날짜-window_size의 날짜를 저장한 것임.
-            이유는 밑에서 더 설명함.'''
-            data = self.train.loc['2022-11-01':self.test_index]
+            # validation이 끝나는 시점부터 retrain data로 사용함.
+            data = self.train.loc['2006-01-01':self.test_index]
             train_data, val_data = train_test_split(data, test_size=0.2, random_state=42, shuffle=False)
             train_dataset = CustomDataset(train_data)
             val_dataset = CustomDataset(val_data)
@@ -214,12 +205,12 @@ class Run:
 
         print('Finished checking loss and RMSE!')
 
-    def evaluate_testset(self):
+    def evaluate_testset(self, retrain):
         print(' ')
         print('Saving evaluations and predictions for a test set...')
 
         # 처음 while문 들어갈때는 test_dl이 없으므로 만들어 줘야 함. 또한 retrain을 하지 않을 때를 위해서 필요함.
-        self.test_data = self.train.loc['2023-01-01':]
+        self.test_data = self.train.loc['2006-01-01':]
         self.test_dataset = TestDataset(self.test_data)
         self.test_dl = DataLoader(self.test_dataset, batch_size=1, shuffle=False)
 
@@ -227,8 +218,8 @@ class Run:
         self.pred = pd.DataFrame(columns=['Predictions', 'Ground Truths'])
         pred_index = self.test_data.index[len(self.test_data) - len(self.test_dl):]
 
-        '''2023-01-01부터 시작하는 첫 test_data의 index가 저장될 필요가 있음. self.test_data는 계속 변하기 때문에 
-        self_data.index를 사용하면 안됨. 이유는 밑에서 더 설명.'''
+        '''2006-01-01부터 시작하는 첫 test_data의 index가 저장될 필요가 있음. self.test_data는 계속 변하기 때문에 
+        self_data.index를 사용하면 안됨.'''
         retrain_index = self.test_data.index
 
         # Needed to load weights after model training and test them later.
@@ -237,10 +228,10 @@ class Run:
         self.model.to(self.device)
 
         j = 0
-        # 294는 총 예측 날짜임. self.pred길이가 294가 되면 종료.
-        while len(self.pred) < 294:
+        # 총 예측 가능 날짜만큼 pred가 쌓이면 종료 됨.
+        while len(self.pred) < len(pred_index):
             # 처음은 retrain을 스킵해야 하기 때문에
-            if j > 0:
+            if retrain & (j > 0):
                 self.run_model(True)
 
             self.model.eval()
@@ -252,10 +243,10 @@ class Run:
                     gt = gt.squeeze().detach().numpy().tolist()
                     self.pred.loc[len(self.pred)] = [output, gt]
 
-                    if len(self.pred) % 60 == 0:
-                        '''이 부분에서 self.test_index를 저장하는데 retrain_index를 사용해야 2023-01-01부터 
-                        총 예측한 날짜 이후 날짜가 저장됨. <=> 주기 마지막 날짜 - 20일과 동치'''
-                        self.test_index = retrain_index[len(self.pred)]
+                    if retrain & (len(self.pred) % 100 == 0):
+                        '''이 부분에서 self.test_index를 저장하는데 retrain_index를 사용해야 2006-01-01부터 80일 이후 날짜가
+                        저장됨. <=> 주기의 마지막 날짜 -20 과 동치.'''
+                        self.test_index = retrain_index[len(self.pred) - 20]
                         break
             j += 1
 
