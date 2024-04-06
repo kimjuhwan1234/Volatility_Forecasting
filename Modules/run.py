@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 from Modules.dataset import CustomDataset, TestDataset
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-
+import time
 import torch
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -134,7 +134,7 @@ class Run:
             '''retrain 주기만큼 예측이 끊나면 주기의 마지막 날짜 -20을 self.test_index에 저장하게 됨. 그 이유는 retrain 예측이 
             끊났을 때 마지막 날짜를 저장하게 되면 초반 20일은 항상 사용하지 않기 때문에 마지막 예측 날짜의 20일을 뺀 값을 사용해야
             예측이 연속적으로 이뤄지기 때문. 때문에 self.test_data는 마지막 예측 날짜의 -20일 부터 시작하는 것이 됨. '''
-            self.test_data = self.train.loc[self.test_index:]
+            self.test_data = self.train.loc[self.test_index:'2009-12-31']
             self.test_dataset = TestDataset(self.test_data)
             self.test_dl = DataLoader(self.test_dataset, batch_size=1, shuffle=False)
 
@@ -210,7 +210,7 @@ class Run:
         print('Saving evaluations and predictions for a test set...')
 
         # 처음 while문 들어갈때는 test_dl이 없으므로 만들어 줘야 함. 또한 retrain을 하지 않을 때를 위해서 필요함.
-        self.test_data = self.train.loc['2006-01-01':]
+        self.test_data = self.train.loc['2006-01-01':'2009-12-31']
         self.test_dataset = TestDataset(self.test_data)
         self.test_dl = DataLoader(self.test_dataset, batch_size=1, shuffle=False)
 
@@ -233,6 +233,8 @@ class Run:
             # 처음은 retrain을 스킵해야 하기 때문에
             if retrain & (j > 0):
                 self.run_model(True)
+                print(f'{len(pred_index)}: {len(self.pred) / len(pred_index) * 100:.2f}%')
+                time.sleep(3)
 
             self.model.eval()
             with ((torch.no_grad())):
@@ -242,11 +244,11 @@ class Run:
                     output = output.cpu().detach().numpy().tolist()
                     gt = gt.squeeze().detach().numpy().tolist()
                     self.pred.loc[len(self.pred)] = [output, gt]
-
-                    if retrain & (len(self.pred) % 100 == 0):
+                    total = (len(self.pred)+250) / len(pred_index)*100
+                    if retrain & (len(self.pred) % 250 == 0) & (total < 100):
                         '''이 부분에서 self.test_index를 저장하는데 retrain_index를 사용해야 2006-01-01부터 80일 이후 날짜가
                         저장됨. <=> 주기의 마지막 날짜 -20 과 동치.'''
-                        self.test_index = retrain_index[len(self.pred) - 20]
+                        self.test_index = retrain_index[len(self.pred)]
                         break
             j += 1
 

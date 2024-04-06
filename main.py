@@ -57,7 +57,7 @@ class Execution:
         if self.config['model'].Transfer:
             file_list = self.get_file_list()
         if not self.config['model'].Transfer:
-            file_list = ['Database/spot_vol/SP_vol.csv']
+            file_list = ['Database/spot_std/SP_vol.csv']
 
         for file in file_list:
             print('')
@@ -66,9 +66,10 @@ class Execution:
             trainer = Run(file, self.config)
             # trainer.run_model(False)
             # trainer.check_validation()
-            trainer.evaluate_testset(self.config['model'].retrain)
+            if self.config['model'].Transfer:
+                trainer.evaluate_testset(self.config['model'].retrain)
 
 
 if __name__ == "__main__":
-    E = Execution('Database/oil_std', None)
+    E = Execution('Database/future_std', None)
     E.main()
