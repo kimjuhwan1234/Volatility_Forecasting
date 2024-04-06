@@ -246,7 +246,7 @@ class Run:
                     self.pred.loc[len(self.pred)] = [output, gt]
                     total = (len(self.pred)+250) / len(pred_index)*100
                     if retrain & (len(self.pred) % 250 == 0) & (total < 100):
-                        '''이 부분에서 self.test_index를 저장하는데 retrain_index를 사용해야 2006-01-01부터 80일 이후 날짜가
+                        '''이 부분에서 self.test_index를 저장하는데 retrain_index를 사용해야 2006-01-01부터 100일 이후 날짜가
                         저장됨. <=> 주기의 마지막 날짜 -20 과 동치.'''
                         self.test_index = retrain_index[len(self.pred)]
                         break
