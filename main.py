@@ -64,10 +64,9 @@ class Execution:
             print(f'{file} will be started...')
             time.sleep(5)
             trainer = Run(file, self.config)
-            # trainer.run_model(False)
-            # trainer.check_validation()
-            if self.config['model'].Transfer:
-                trainer.evaluate_testset(self.config['model'].retrain)
+            trainer.run_model(False)
+            trainer.check_validation()
+            trainer.evaluate_testset(self.config['model'].retrain)
 
 
 if __name__ == "__main__":

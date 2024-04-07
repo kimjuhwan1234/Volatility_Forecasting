@@ -223,9 +223,9 @@ class Run:
         retrain_index = self.test_data.index
 
         # Needed to load weights after model training and test them later.
-        self.model = self.config['structure']
-        self.model.load_state_dict(torch.load(self.weight_path))
-        self.model.to(self.device)
+        # self.model = self.config['structure']
+        # self.model.load_state_dict(torch.load(self.weight_path))
+        # self.model.to(self.device)
 
         j = 0
         # 총 예측 가능 날짜만큼 pred가 쌓이면 종료 됨.
@@ -244,8 +244,10 @@ class Run:
                     output = output.cpu().detach().numpy().tolist()
                     gt = gt.squeeze().detach().numpy().tolist()
                     self.pred.loc[len(self.pred)] = [output, gt]
-                    total = (len(self.pred)+250) / len(pred_index)*100
-                    if retrain & (len(self.pred) % 250 == 0) & (total < 100):
+
+                    # 마지막 시행은 retrain if 문안으로 들어가면 안됨. total로 방지.
+                    total = (len(self.pred) + 120) / len(pred_index) * 100
+                    if retrain & (len(self.pred) % 120 == 0) & (total < 100):
                         '''이 부분에서 self.test_index를 저장하는데 retrain_index를 사용해야 2006-01-01부터 100일 이후 날짜가
                         저장됨. <=> 주기의 마지막 날짜 -20 과 동치.'''
                         self.test_index = retrain_index[len(self.pred)]
