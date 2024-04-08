@@ -33,10 +33,10 @@ parser.add_argument("--patience", type=int, default=3, help="patience")
 parser.add_argument("--use_accelerator", type=bool, default=False, help="use_accelerator")
 parser.add_argument("--use_wandb", type=bool, default=False, help="use_wandb")
 
-parser.add_argument("--backbone_train_end", type=str, default='2011-01-01', help="date")
-parser.add_argument("--transfer_train_start", type=str, default='2014-01-01', help="date")
-parser.add_argument("--transfer_val_start", type=str, default='2021-01-01', help="date")
-parser.add_argument("--transfer_test_start", type=str, default='2023-01-01', help="date")
+parser.add_argument("--backbone_train_end", type=str, default='1999-01-01', help="date")
+parser.add_argument("--transfer_train_start", type=str, default='2001-01-01', help="date")
+parser.add_argument("--transfer_val_start", type=str, default='2005-01-01', help="date")
+parser.add_argument("--transfer_test_start", type=str, default='2006-01-01', help="date")
 
 opt_train = parser.parse_args()
 print(opt_train)
@@ -71,10 +71,10 @@ if opt_model.Transfer:
     if opt_model.backbone1:
         backbone_weight_path = 'Weight/Backbone/BiLSTM_SP.pth'
         backbone1.load_state_dict(torch.load(backbone_weight_path))
-        # config['structure'] = backbone1
-        config['structure'] = Transfer_Learning(backbone1, opt_model.output_size,
-                                                opt_model.hidden_size, opt_model.additional,
-                                                )
+        config['structure'] = backbone1
+        # config['structure'] = Transfer_Learning(backbone1, opt_model.output_size,
+        #                                         opt_model.hidden_size, opt_model.additional,
+        #                                         )
 
     if opt_model.backbone2:
         backbone_weight_path = 'Weight/Backbone/DLinear_SP.pth'

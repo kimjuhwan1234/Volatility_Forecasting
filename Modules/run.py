@@ -210,7 +210,7 @@ class Run:
         print('Saving evaluations and predictions for a test set...')
 
         # 처음 while문 들어갈때는 test_dl이 없으므로 만들어 줘야 함. 또한 retrain을 하지 않을 때를 위해서 필요함.
-        self.test_data = self.train.loc[self.config['train'].transfer_test_start:'2024-04-31']
+        self.test_data = self.train.loc[self.config['train'].transfer_test_start:'2009-12-31']
         self.test_dataset = TestDataset(self.test_data)
         self.test_dl = DataLoader(self.test_dataset, batch_size=1, shuffle=False)
 
@@ -266,7 +266,7 @@ class Run:
         print(' ')
         print(f'Model: {self.weight_path}')
         print(f'ND: {nd:.4f}')
-        print(f'MAE: {mae:.4f}')
-        print(f'RMSE: {rmse:.4f}')
+        print(f'MAE: {mae}')
+        print(f'RMSE: {rmse}')
         print(f'adjusted-R^2: {ad_r2:.4f}')
         print(f"Saved Result in {self.saving_path}!")
