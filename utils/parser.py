@@ -8,7 +8,7 @@ parser.add_argument("--num_layers", type=int, default=2, help="num_layers")
 parser.add_argument("--output_size", type=int, default=1, help="output_size")
 parser.add_argument("--bidirectional", type=bool, default=True, help="bidirectional")
 
-parser.add_argument("--retrain", type=bool, default=True, help="retrain")
+parser.add_argument("--retrain", type=bool, default=False, help="retrain")
 parser.add_argument("--Transfer", type=bool, default=True, help="Transfer")
 parser.add_argument("--additional", type=bool, default=False, help="additional")
 
@@ -32,6 +32,11 @@ parser.add_argument("--lr", type=float, default=0.001, help="learning rate")
 parser.add_argument("--patience", type=int, default=3, help="patience")
 parser.add_argument("--use_accelerator", type=bool, default=False, help="use_accelerator")
 parser.add_argument("--use_wandb", type=bool, default=False, help="use_wandb")
+
+parser.add_argument("--backbone_train_end", type=str, default='2011-01-01', help="date")
+parser.add_argument("--transfer_train_start", type=str, default='2014-01-01', help="date")
+parser.add_argument("--transfer_val_start", type=str, default='2021-01-01', help="date")
+parser.add_argument("--transfer_test_start", type=str, default='2023-01-01', help="date")
 
 opt_train = parser.parse_args()
 print(opt_train)

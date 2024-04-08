@@ -94,11 +94,11 @@ class Run:
 
         # 처음 훈련할 때 load_data 설정.
         if not retraining:
-            # Backbone 훈련을 위한 설정. 1986년 부터 1999년 까지를 훈련데이터로 씀
+            # Backbone 훈련을 위한 설정. 1986년 부터 1999년 까지를 훈련데이터로 씀 -> parser에서 수정하게 바꿈.
             if not self.config['model'].Transfer:
-                train_data = self.train.loc[:'1999-01-01']
-                # 1999년부터 2000년 까지가 validation. 전처리에서 애초에 2000년 12월에 끝나게 해둠.
-                val_data = self.train.loc['1999-01-01':]
+                train_data = self.train.loc[:self.config['train'].backbone_train_end]
+                # 1999년부터 2000년 까지가 validation. 전처리에서 애초에 2000년 12월에 끝나게 해둠. -> parser에서 수정하게 바꿈.
+                val_data = self.train.loc[self.config['train'].backbone_train_end:self.config['train'].transfer_train_start]
                 train_dataset = CustomDataset(train_data)
                 val_dataset = CustomDataset(val_data)
                 dataloaders = {
@@ -108,10 +108,10 @@ class Run:
 
             # Transfer Learning을 위한 설정.
             if self.config['model'].Transfer:
-                # 전처리에서 애초에 2001년부터 시작하게 해둠. 총 4년 훈련
-                train_data = self.train.loc[:'2005-01-01']
+                # 전처리에서 애초에 2001년부터 시작하게 해둠. 총 4년 훈련 -> parser에서 수정하게 바꿈.
+                train_data = self.train.loc[self.config['train'].transfer_train_start:self.config['train'].transfer_val_start]
                 # 1년 validation
-                val_data = self.train.loc['2005-01-01':'2006-01-01']
+                val_data = self.train.loc[self.config['train'].transfer_val_start:self.config['train'].transfer_test_start]
                 train_dataset = CustomDataset(train_data)
                 val_dataset = CustomDataset(val_data)
                 dataloaders = {
@@ -122,7 +122,7 @@ class Run:
         # retraining 할때 설정.
         if retraining:
             # validation이 끝나는 시점부터 retrain data로 사용함.
-            data = self.train.loc['2006-01-01':self.test_index]
+            data = self.train.loc[self.config['train'].transfer_test_start:self.test_index]
             train_data, val_data = train_test_split(data, test_size=0.2, random_state=42, shuffle=False)
             train_dataset = CustomDataset(train_data)
             val_dataset = CustomDataset(val_data)
@@ -210,7 +210,7 @@ class Run:
         print('Saving evaluations and predictions for a test set...')
 
         # 처음 while문 들어갈때는 test_dl이 없으므로 만들어 줘야 함. 또한 retrain을 하지 않을 때를 위해서 필요함.
-        self.test_data = self.train.loc['2006-01-01':'2009-12-31']
+        self.test_data = self.train.loc[self.config['train'].transfer_test_start:'2024-04-31']
         self.test_dataset = TestDataset(self.test_data)
         self.test_dl = DataLoader(self.test_dataset, batch_size=1, shuffle=False)
 
@@ -223,9 +223,9 @@ class Run:
         retrain_index = self.test_data.index
 
         # Needed to load weights after model training and test them later.
-        # self.model = self.config['structure']
+        self.model = self.config['structure']
         # self.model.load_state_dict(torch.load(self.weight_path))
-        # self.model.to(self.device)
+        self.model.to(self.device)
 
         j = 0
         # 총 예측 가능 날짜만큼 pred가 쌓이면 종료 됨.
