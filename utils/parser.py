@@ -10,7 +10,7 @@ parser.add_argument("--bidirectional", type=bool, default=True, help="bidirectio
 
 parser.add_argument("--retrain", type=bool, default=False, help="retrain")
 parser.add_argument("--Transfer", type=bool, default=True, help="Transfer")
-parser.add_argument("--additional", type=bool, default=False, help="additional")
+parser.add_argument("--additional", type=bool, default=True, help="additional")
 
 parser.add_argument("--backbone1", type=bool, default=True, help="biLSTM")
 parser.add_argument("--backbone2", type=bool, default=False, help="DLinear")
@@ -42,7 +42,7 @@ opt_train = parser.parse_args()
 print(opt_train)
 # ---------------------------------------------------------------------------------------------------------------------#
 backbone1 = single_biLSTM(input_size=opt_model.input_size, hidden_size=opt_model.hidden_size,
-                         num_layers=opt_model.num_layers, output_size=opt_model.output_size)
+                         num_layers=opt_model.num_layers, output_size=opt_model.output_size, additional=opt_model.additional)
 backbone3 = MLP(input_size=opt_model.input_size, hidden_size=opt_model.hidden_size, output_size=opt_model.output_size)
 # ---------------------------------------------------------------------------------------------------------------------#
 config = dict()
@@ -69,8 +69,8 @@ if not opt_model.Transfer:
 
 if opt_model.Transfer:
     if opt_model.backbone1:
-        backbone_weight_path = 'Weight/Backbone/BiLSTM_SP.pth'
-        backbone1.load_state_dict(torch.load(backbone_weight_path))
+        # backbone_weight_path = 'Weight/Backbone/BiLSTM_SP.pth'
+        # backbone1.load_state_dict(torch.load(backbone_weight_path))
         config['structure'] = backbone1
         # config['structure'] = Transfer_Learning(backbone1, opt_model.output_size,
         #                                         opt_model.hidden_size, opt_model.additional,
@@ -79,27 +79,27 @@ if opt_model.Transfer:
     if opt_model.backbone2:
         backbone_weight_path = 'Weight/Backbone/DLinear_SP.pth'
         backbone1.load_state_dict(torch.load(backbone_weight_path))
-        config['structure'] = Transfer_Learning(backbone1, opt_model.output_size,
-                                                opt_model.hidden_size, opt_model.additional,
-                                                )
+        # config['structure'] = Transfer_Learning(backbone1, opt_model.output_size,
+        #                                         opt_model.hidden_size, opt_model.additional,
+        #                                         )
 
     if opt_model.backbone3:
         backbone_weight_path = 'Weight/Backbone/MLP_SP.pth'
         backbone3.load_state_dict(torch.load(backbone_weight_path))
-        config['structure'] = Transfer_Learning(backbone3, opt_model.output_size,
-                                                opt_model.hidden_size, opt_model.additional,
-                                                )
+        # config['structure'] = Transfer_Learning(backbone3, opt_model.output_size,
+        #                                         opt_model.hidden_size, opt_model.additional,
+        #                                         )
 
     if opt_model.backbone4:
         backbone_weight_path = 'Weight/Backbone/NBEATSx_SP.pth'
         backbone1.load_state_dict(torch.load(backbone_weight_path))
-        config['structure'] = Transfer_Learning(backbone1, opt_model.output_size,
-                                                opt_model.hidden_size, opt_model.additional,
-                                                )
+        # config['structure'] = Transfer_Learning(backbone1, opt_model.output_size,
+        #                                         opt_model.hidden_size, opt_model.additional,
+        #                                         )
 
     if opt_model.backbone5:
         backbone_weight_path = 'Weight/Backbone/Prophet_SP.pth'
         backbone1.load_state_dict(torch.load(backbone_weight_path))
-        config['structure'] = Transfer_Learning(backbone1, opt_model.output_size,
-                                                opt_model.hidden_size, opt_model.additional,
-                                                )
+        # config['structure'] = Transfer_Learning(backbone1, opt_model.output_size,
+        #                                         opt_model.hidden_size, opt_model.additional,
+        #                                         )

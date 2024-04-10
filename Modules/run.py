@@ -9,6 +9,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 import time
 import torch
 import pandas as pd
+import torch.nn as nn
 import matplotlib.pyplot as plt
 
 
@@ -24,6 +25,8 @@ class Run:
         self.device = self.config['train'].device
         self.batch_size = self.config['train'].batch_size
         self.train = pd.read_csv(self.file_path, index_col=0)
+
+        self.model = self.config['structure']
 
         # Transfer learning and Backbone Model 여부에 따라 weight 저장 위치를 달리함.
         if not self.config['model'].Transfer:
@@ -98,7 +101,8 @@ class Run:
             if not self.config['model'].Transfer:
                 train_data = self.train.loc[:self.config['train'].backbone_train_end]
                 # 1999년부터 2000년 까지가 validation. 전처리에서 애초에 2000년 12월에 끝나게 해둠. -> parser에서 수정하게 바꿈.
-                val_data = self.train.loc[self.config['train'].backbone_train_end:self.config['train'].transfer_train_start]
+                val_data = self.train.loc[
+                           self.config['train'].backbone_train_end:self.config['train'].transfer_train_start]
                 train_dataset = CustomDataset(train_data)
                 val_dataset = CustomDataset(val_data)
                 dataloaders = {
@@ -109,9 +113,11 @@ class Run:
             # Transfer Learning을 위한 설정.
             if self.config['model'].Transfer:
                 # 전처리에서 애초에 2001년부터 시작하게 해둠. 총 4년 훈련 -> parser에서 수정하게 바꿈.
-                train_data = self.train.loc[self.config['train'].transfer_train_start:self.config['train'].transfer_val_start]
+                train_data = self.train.loc[
+                             self.config['train'].transfer_train_start:self.config['train'].transfer_val_start]
                 # 1년 validation
-                val_data = self.train.loc[self.config['train'].transfer_val_start:self.config['train'].transfer_test_start]
+                val_data = self.train.loc[
+                           self.config['train'].transfer_val_start:self.config['train'].transfer_test_start]
                 train_dataset = CustomDataset(train_data)
                 val_dataset = CustomDataset(val_data)
                 dataloaders = {
@@ -151,14 +157,18 @@ class Run:
 
         # retraining이 True이면 self.model이 이미 선언되었을 것임.
         if retraining:
+            for param in self.model.parameters():
+                param.requires_grad = False
+            num_features = self.model.fc.in_features
+            self.model.fc = nn.Linear(num_features, self.config['model'].output_size)
             self.model.to(self.device)
+            opt = Adam(self.model.fc.parameters(), lr=self.lr)
 
         # retraining이 False이면 self.model이 없기 때문에 선언해줘야 함.
         if not retraining:
-            self.model = self.config['structure']
+            opt = Adam(self.model.parameters(), lr=self.lr)
             self.model.to(self.device)
 
-        opt = Adam(self.model.parameters(), lr=self.lr)
         lr_scheduler = ReduceLROnPlateau(opt, mode='min', factor=0.2, patience=self.config['train'].patience)
         parameters = {
             'num_epochs': self.epochs,
@@ -223,7 +233,6 @@ class Run:
         retrain_index = self.test_data.index
 
         # Needed to load weights after model training and test them later.
-        self.model = self.config['structure']
         # self.model.load_state_dict(torch.load(self.weight_path))
         self.model.to(self.device)
 
@@ -246,8 +255,8 @@ class Run:
                     self.pred.loc[len(self.pred)] = [output, gt]
 
                     # 마지막 시행은 retrain if 문안으로 들어가면 안됨. total로 방지.
-                    total = (len(self.pred) + 120) / len(pred_index) * 100
-                    if retrain & (len(self.pred) % 120 == 0) & (total < 100):
+                    total = (len(self.pred)) / len(pred_index) * 100
+                    if retrain & (len(self.pred) % 250 == 0) & (total < 100):
                         '''이 부분에서 self.test_index를 저장하는데 retrain_index를 사용해야 2006-01-01부터 100일 이후 날짜가
                         저장됨. <=> 주기의 마지막 날짜 -20 과 동치.'''
                         self.test_index = retrain_index[len(self.pred)]
