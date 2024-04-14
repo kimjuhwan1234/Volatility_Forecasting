@@ -24,7 +24,7 @@ class Execution:
     def setup(self, rank):
         os.environ['CUDA_VISIBLE_DEVICES'] = str(rank)
         torch.cuda.set_device(rank)
-        # print(f"Process on GPU: {torch.cuda.current_device()}")
+        print(f"Process on GPU: {torch.cuda.current_device()}")
         # logging.info(f"Process on GPU: {torch.cuda.current_device()}")
 
     def process_file(self, rank, file):
@@ -57,7 +57,7 @@ class Execution:
         if self.config['model'].Transfer:
             file_list = self.get_file_list()
         if not self.config['model'].Transfer:
-            file_list = ['Database/future_std/BZ_vol.csv']
+            file_list = ['Database/spot_std/SP_vol.csv']
 
         for file in file_list:
             print('')
