@@ -10,13 +10,11 @@ parser.add_argument("--bidirectional", type=bool, default=True, help="bidirectio
 
 parser.add_argument("--retrain", type=bool, default=False, help="retrain")
 parser.add_argument("--Transfer", type=bool, default=True, help="Transfer")
-parser.add_argument("--additional", type=bool, default=True, help="additional")
+parser.add_argument("--additional", type=bool, default=False, help="additional")
 
 parser.add_argument("--backbone1", type=bool, default=True, help="biLSTM")
-parser.add_argument("--backbone2", type=bool, default=False, help="DLinear")
+parser.add_argument("--backbone2", type=bool, default=False, help="stackbiLSTM")
 parser.add_argument("--backbone3", type=bool, default=False, help="MLP")
-parser.add_argument("--backbone4", type=bool, default=False, help="NBEATSx")
-parser.add_argument("--backbone5", type=bool, default=False, help="Prophet")
 
 opt_model = parser.parse_args()
 print(opt_model)
@@ -33,73 +31,42 @@ parser.add_argument("--patience", type=int, default=3, help="patience")
 parser.add_argument("--use_accelerator", type=bool, default=False, help="use_accelerator")
 parser.add_argument("--use_wandb", type=bool, default=False, help="use_wandb")
 
-parser.add_argument("--backbone_train_end", type=str, default='1999-01-01', help="date")
-parser.add_argument("--transfer_train_start", type=str, default='2001-01-01', help="date")
-parser.add_argument("--transfer_val_start", type=str, default='2005-01-01', help="date")
-parser.add_argument("--transfer_test_start", type=str, default='2006-01-01', help="date")
+parser.add_argument("--backbone_train_end", type=str, default='2005-01-01', help="date")
+parser.add_argument("--backbone_val_end", type=str, default='2006-01-01', help="date")
+parser.add_argument("--transfer_test_start", type=str, default='2006-04-01', help="date")
+parser.add_argument("--transfer_test_end", type=str, default='2009-12-31', help="date")
+
 
 opt_train = parser.parse_args()
 print(opt_train)
 # ---------------------------------------------------------------------------------------------------------------------#
 backbone1 = single_biLSTM(input_size=opt_model.input_size, hidden_size=opt_model.hidden_size,
-                         num_layers=opt_model.num_layers, output_size=opt_model.output_size, additional=opt_model.additional)
+                          num_layers=opt_model.num_layers, output_size=opt_model.output_size,
+                          additional=opt_model.additional)
+
+backbone2 = stack_BiLSTM(input_size=opt_model.input_size, hidden_size=opt_model.hidden_size,
+                         num_layers=opt_model.num_layers, output_size=opt_model.output_size,
+                         bidirectional=opt_model.bidirectional, additional=opt_model.additional)
+
 backbone3 = MLP(input_size=opt_model.input_size, hidden_size=opt_model.hidden_size, output_size=opt_model.output_size)
 # ---------------------------------------------------------------------------------------------------------------------#
 config = dict()
 config['model'] = opt_model
 config['train'] = opt_train
 
-if not opt_model.Transfer:
-    if opt_model.backbone1:
-        # backbone_weight_path = 'Weight/Backbone/BiLSTM_SP.pth'
-        # backbone1.load_state_dict(torch.load(backbone_weight_path))
-        config['structure'] = backbone1
+if opt_model.backbone1:
+    backbone_weight_path = 'Weight/Backbone/BiLSTM_BZ.pth'
+    backbone1.load_state_dict(torch.load(backbone_weight_path))
+    config['structure'] = backbone1
 
-    if opt_model.backbone2:
-        config['structure'] = backbone1
 
-    if opt_model.backbone3:
-        config['structure'] = backbone3
+if opt_model.backbone2:
+    backbone_weight_path = 'Weight/Backbone/stackBiLSTM_SP.pth'
+    backbone2.load_state_dict(torch.load(backbone_weight_path))
+    config['structure'] = backbone2
 
-    if opt_model.backbone4:
-        config['structure'] = backbone1
 
-    if opt_model.backbone5:
-        config['structure'] = backbone1
-
-if opt_model.Transfer:
-    if opt_model.backbone1:
-        # backbone_weight_path = 'Weight/Backbone/BiLSTM_SP.pth'
-        # backbone1.load_state_dict(torch.load(backbone_weight_path))
-        config['structure'] = backbone1
-        # config['structure'] = Transfer_Learning(backbone1, opt_model.output_size,
-        #                                         opt_model.hidden_size, opt_model.additional,
-        #                                         )
-
-    if opt_model.backbone2:
-        backbone_weight_path = 'Weight/Backbone/DLinear_SP.pth'
-        backbone1.load_state_dict(torch.load(backbone_weight_path))
-        # config['structure'] = Transfer_Learning(backbone1, opt_model.output_size,
-        #                                         opt_model.hidden_size, opt_model.additional,
-        #                                         )
-
-    if opt_model.backbone3:
-        backbone_weight_path = 'Weight/Backbone/MLP_SP.pth'
-        backbone3.load_state_dict(torch.load(backbone_weight_path))
-        # config['structure'] = Transfer_Learning(backbone3, opt_model.output_size,
-        #                                         opt_model.hidden_size, opt_model.additional,
-        #                                         )
-
-    if opt_model.backbone4:
-        backbone_weight_path = 'Weight/Backbone/NBEATSx_SP.pth'
-        backbone1.load_state_dict(torch.load(backbone_weight_path))
-        # config['structure'] = Transfer_Learning(backbone1, opt_model.output_size,
-        #                                         opt_model.hidden_size, opt_model.additional,
-        #                                         )
-
-    if opt_model.backbone5:
-        backbone_weight_path = 'Weight/Backbone/Prophet_SP.pth'
-        backbone1.load_state_dict(torch.load(backbone_weight_path))
-        # config['structure'] = Transfer_Learning(backbone1, opt_model.output_size,
-        #                                         opt_model.hidden_size, opt_model.additional,
-        #                                         )
+if opt_model.backbone3:
+    backbone_weight_path = 'Weight/Backbone/MLP_SP.pth'
+    backbone3.load_state_dict(torch.load(backbone_weight_path))
+    config['structure'] = backbone3

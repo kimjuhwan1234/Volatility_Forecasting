@@ -27,70 +27,28 @@ class Run:
         self.train = pd.read_csv(self.file_path, index_col=0)
 
         self.model = self.config['structure']
+        self.weight_path = f'Weight/{self.file_path[-10:-8]}.pth'
 
         # Transfer learning and Backbone Model 여부에 따라 weight 저장 위치를 달리함.
         if not self.config['model'].Transfer:
             if self.config['model'].backbone1:
                 self.weight_path = f'Weight/Backbone/BiLSTM_{self.file_path[-10:-8]}.pth'
-                self.saving_path = f'Files/Backbone_{self.file_path[-10:-8]}.csv'
 
             if self.config['model'].backbone2:
-                self.weight_path = f'Weight/Backbone/DLinear_{self.file_path[-10:-8]}.pth'
+                self.weight_path = f'Weight/Backbone/stackBiLSTM_{self.file_path[-10:-8]}.pth'
 
             if self.config['model'].backbone3:
                 self.weight_path = f'Weight/Backbone/MLP_{self.file_path[-10:-8]}.pth'
 
-            if self.config['model'].backbone4:
-                self.weight_path = f'Weight/Backbone/NBEATSx_{self.file_path[-10:-8]}.pth'
-
-            if self.config['model'].backbone5:
-                self.weight_path = f'Weight/Backbone/Prophet_{self.file_path[-10:-8]}.pth'
-
         if self.config['model'].Transfer:
             if self.config['model'].backbone1:
-                if self.config['model'].additional:
-                    self.weight_path = f'Weight/BiLSTM/additional_{self.file_path[-10:-8]}.pth'
-                    self.saving_path = f'Files/BiLSTM/additional_{self.file_path[-10:-8]}.csv'
-
-                if not self.config['model'].additional:
-                    self.weight_path = f'Weight/BiLSTM/additionalX_{self.file_path[-10:-8]}.pth'
-                    self.saving_path = f'Files/BiLSTM/additionalX_{self.file_path[-10:-8]}.csv'
+                self.saving_path = f'Files/BiLSTM/additionalX_{self.file_path[-10:-8]}.csv'
 
             if self.config['model'].backbone2:
-                if self.config['model'].additional:
-                    self.weight_path = f'Weight/DLinear/additional_{self.file_path[-10:-8]}.pth'
-                    self.saving_path = f'Files/DLinear/additional_{self.file_path[-10:-8]}.csv'
-
-                if not self.config['model'].additional:
-                    self.weight_path = f'Weight/DLinear/additionalX_{self.file_path[-10:-8]}.pth'
-                    self.saving_path = f'Files/DLinear/additionalX_{self.file_path[-10:-8]}.csv'
+                self.saving_path = f'Files/stackBiLSTM/additionalX_{self.file_path[-10:-8]}.csv'
 
             if self.config['model'].backbone3:
-                if self.config['model'].additional:
-                    self.weight_path = f'Weight/MLP/additional_{self.file_path[-10:-8]}.pth'
-                    self.saving_path = f'Files/MLP/additional_{self.file_path[-10:-8]}.csv'
-
-                if not self.config['model'].additional:
-                    self.weight_path = f'Weight/MLP/additionalX_{self.file_path[-10:-8]}.pth'
-                    self.saving_path = f'Files/MLP/additionalX_{self.file_path[-10:-8]}.csv'
-
-            if self.config['model'].backbone4:
-                if self.config['model'].additional:
-                    self.weight_path = f'Weight/NBEATSx/additional_{self.file_path[-10:-8]}.pth'
-                    self.saving_path = f'Files/NBEATSx/additional_{self.file_path[-10:-8]}.csv'
-
-                if not self.config['model'].additional:
-                    self.weight_path = f'Weight/NBEATSx/additionalX_{self.file_path[-10:-8]}.pth'
-                    self.saving_path = f'Files/NBEATSx/additionalX_{self.file_path[-10:-8]}.csv'
-
-            if self.config['model'].backbone5:
-                if self.config['model'].additional:
-                    self.weight_path = f'Weight/Prophet/additional_{self.file_path[-10:-8]}.pth'
-                    self.saving_path = f'Files/Prophet/additional_{self.file_path[-10:-8]}.csv'
-
-                if not self.config['model'].additional:
-                    self.weight_path = f'Weight/Prophet/additionalX_{self.file_path[-10:-8]}.pth'
-                    self.saving_path = f'Files/Prophet/additionalX_{self.file_path[-10:-8]}.csv'
+                self.saving_path = f'Files/MLP/additionalX_{self.file_path[-10:-8]}.csv'
 
     def load_data(self, retraining):
         print('Loading data...')
@@ -98,37 +56,21 @@ class Run:
         # 처음 훈련할 때 load_data 설정.
         if not retraining:
             # Backbone 훈련을 위한 설정. 1986년 부터 1999년 까지를 훈련데이터로 씀 -> parser에서 수정하게 바꿈.
-            if not self.config['model'].Transfer:
-                train_data = self.train.loc[:self.config['train'].backbone_train_end]
-                # 1999년부터 2000년 까지가 validation. 전처리에서 애초에 2000년 12월에 끝나게 해둠. -> parser에서 수정하게 바꿈.
-                val_data = self.train.loc[
-                           self.config['train'].backbone_train_end:self.config['train'].transfer_train_start]
-                train_dataset = CustomDataset(train_data)
-                val_dataset = CustomDataset(val_data)
-                dataloaders = {
-                    'train': DataLoader(train_dataset, batch_size=self.batch_size, shuffle=False),
-                    'val': DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False),
-                }
-
-            # Transfer Learning을 위한 설정.
-            if self.config['model'].Transfer:
-                # 전처리에서 애초에 2001년부터 시작하게 해둠. 총 4년 훈련 -> parser에서 수정하게 바꿈.
-                train_data = self.train.loc[
-                             self.config['train'].transfer_train_start:self.config['train'].transfer_val_start]
-                # 1년 validation
-                val_data = self.train.loc[
-                           self.config['train'].transfer_val_start:self.config['train'].transfer_test_start]
-                train_dataset = CustomDataset(train_data)
-                val_dataset = CustomDataset(val_data)
-                dataloaders = {
-                    'train': DataLoader(train_dataset, batch_size=self.batch_size, shuffle=False),
-                    'val': DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False),
-                }
+            train_data = self.train.loc[:self.config['train'].backbone_train_end]
+            # 1999년부터 2000년 까지가 validation. 전처리에서 애초에 2000년 12월에 끝나게 해둠. -> parser에서 수정하게 바꿈.
+            val_data = self.train.loc[
+                       self.config['train'].backbone_train_end:self.config['train'].backbone_val_end]
+            train_dataset = CustomDataset(train_data)
+            val_dataset = CustomDataset(val_data)
+            dataloaders = {
+                'train': DataLoader(train_dataset, batch_size=self.batch_size, shuffle=False),
+                'val': DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False),
+            }
 
         # retraining 할때 설정.
         if retraining:
             # validation이 끝나는 시점부터 retrain data로 사용함.
-            data = self.train.loc[self.config['train'].transfer_test_start:self.test_index]
+            data = self.train.loc[self.config['train'].backbone_val_end:self.test_index]
             train_data, val_data = train_test_split(data, test_size=0.2, random_state=42, shuffle=False)
             train_dataset = CustomDataset(train_data)
             val_dataset = CustomDataset(val_data)
@@ -140,7 +82,7 @@ class Run:
             '''retrain 주기만큼 예측이 끊나면 주기의 마지막 날짜 -20을 self.test_index에 저장하게 됨. 그 이유는 retrain 예측이 
             끊났을 때 마지막 날짜를 저장하게 되면 초반 20일은 항상 사용하지 않기 때문에 마지막 예측 날짜의 20일을 뺀 값을 사용해야
             예측이 연속적으로 이뤄지기 때문. 때문에 self.test_data는 마지막 예측 날짜의 -20일 부터 시작하는 것이 됨. '''
-            self.test_data = self.train.loc[self.test_index:'2009-12-31']
+            self.test_data = self.train.loc[self.test_index:self.config['train'].transfer_test_end]
             self.test_dataset = TestDataset(self.test_data)
             self.test_dl = DataLoader(self.test_dataset, batch_size=1, shuffle=False)
 
@@ -220,7 +162,7 @@ class Run:
         print('Saving evaluations and predictions for a test set...')
 
         # 처음 while문 들어갈때는 test_dl이 없으므로 만들어 줘야 함. 또한 retrain을 하지 않을 때를 위해서 필요함.
-        self.test_data = self.train.loc[self.config['train'].transfer_test_start:'2009-12-31']
+        self.test_data = self.train.loc[self.config['train'].transfer_test_start:self.config['train'].transfer_test_end]
         self.test_dataset = TestDataset(self.test_data)
         self.test_dl = DataLoader(self.test_dataset, batch_size=1, shuffle=False)
 
@@ -256,7 +198,7 @@ class Run:
 
                     # 마지막 시행은 retrain if 문안으로 들어가면 안됨. total로 방지.
                     total = (len(self.pred)) / len(pred_index) * 100
-                    if retrain & (len(self.pred) % 250 == 0) & (total < 100):
+                    if retrain & (len(self.pred) % 60 == 0) & (total < 100):
                         '''이 부분에서 self.test_index를 저장하는데 retrain_index를 사용해야 2006-01-01부터 100일 이후 날짜가
                         저장됨. <=> 주기의 마지막 날짜 -20 과 동치.'''
                         self.test_index = retrain_index[len(self.pred)]

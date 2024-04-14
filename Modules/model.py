@@ -3,9 +3,19 @@ import torch
 import torch.nn as nn
 
 
-class StackedLSTM(nn.Module):
-    def __init__(self, input_size, hidden_size, num_layers, output_size, bidirectional):
-        super(StackedLSTM, self).__init__()
+class stack_BiLSTM(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers, output_size, bidirectional, additional):
+        super(stack_BiLSTM, self).__init__()
+
+        self.additional = additional
+
+        # 출력을 위한 선형 레이어
+        self.additional_layer = nn.Sequential(
+            nn.Linear(hidden_size * 2, hidden_size),
+            nn.GELU(),
+            nn.Dropout(0.1),
+            nn.Linear(hidden_size, hidden_size * 2),
+        )
 
         if bidirectional:
             hidden_size2 = hidden_size * 2
@@ -28,9 +38,9 @@ class StackedLSTM(nn.Module):
         # 출력을 위한 선형 레이어
         self.fc = nn.Linear(hidden_size2, output_size)
 
-    def forward(self, x):
+    def forward(self, train, gt=None):
         # 첫 번째 LSTM 층
-        out, _ = self.lstm1(x)
+        out, _ = self.lstm1(train)
 
         # 두 번째 LSTM 층
         out, _ = self.lstm2(out)
@@ -38,12 +48,22 @@ class StackedLSTM(nn.Module):
         # 세 번째 LSTM 층
         out, _ = self.lstm3(out)
 
+        if self.additional:
+            out = self.additional_layer(out)
+
         # 출력을 위한 선형 레이어
-        out = self.fc(out)
+        output = self.fc(out)
 
-        out = out[:, -1, :]
+        output = output[:, -1, :]
 
-        return out
+        output = output.squeeze()
+
+        if gt != None:
+            gt = gt.squeeze()
+            loss = torch.sqrt(mse_loss(output, gt))
+            return output, loss
+
+        return output
 
 
 class single_biLSTM(nn.Module):
@@ -52,28 +72,26 @@ class single_biLSTM(nn.Module):
 
         self.additional = additional
 
-        self.backbone = nn.LSTM(input_size, hidden_size, num_layers=num_layers,
-                                bidirectional=True, batch_first=True)
-
         # 출력을 위한 선형 레이어
-        self.fc = nn.Linear(hidden_size * 2, output_size)
-
         self.additional_layer = nn.Sequential(
             nn.Linear(hidden_size * 2, hidden_size),
             nn.GELU(),
             nn.Dropout(0.1),
-            nn.Linear(hidden_size, output_size),
+            nn.Linear(hidden_size, hidden_size * 2),
         )
+
+        self.backbone = nn.LSTM(input_size, hidden_size, num_layers=num_layers,
+                                bidirectional=True, batch_first=True)
+
+        self.fc = nn.Linear(hidden_size * 2, output_size)
 
     def forward(self, train, gt=None):
         out, _ = self.backbone(train)
 
-        if not self.additional:
-            output = self.fc(out)
-
-        # Todo: additional도 구현했는데 이유는 전체 weight 수정과 마지막 레이어 수정의 절충안이기 때문에 시도해보고자 함.
         if self.additional:
-            output = self.additional_layer(out)
+            out = self.additional_layer(out)
+
+        output = self.fc(out)
 
         output = output[:, -1, :]
 
@@ -97,7 +115,7 @@ class MLP(nn.Module):
             nn.Dropout(0.1),
         )
 
-        self.fc= nn.Linear(hidden_size, output_size),
+        self.fc = nn.Linear(hidden_size, output_size),
 
     def forward(self, train, gt=None):
         output = self.MLP(train)
@@ -110,37 +128,3 @@ class MLP(nn.Module):
             return output, loss
 
         return output
-
-
-# class Transfer_Learning(nn.Module):
-#     def __init__(self, backbone, output_size, hidden_size, additional):
-#         super(Transfer_Learning, self).__init__()
-#
-#         self.backbone = backbone
-#
-#         self.additional = additional
-#
-#         self.additional_layer = nn.Sequential(
-#             nn.Linear(output_size, hidden_size),
-#             nn.GELU(),
-#             nn.Dropout(0.1),
-#             nn.Linear(hidden_size, output_size),
-#         )
-#
-#     def forward(self, train, gt=None):
-#         output = self.backbone(train)
-#
-#         if self.additional:
-#             if output.size() == torch.Size([]):
-#                 output = output.unsqueeze(0)
-#             output = output.unsqueeze(dim=1)
-#             output = self.additional_layer(output)
-#
-#         output = output.squeeze()
-#
-#         if gt != None:
-#             gt = gt.squeeze()
-#             loss = torch.sqrt(mse_loss(output, gt))
-#             return output, loss
-#
-#         return output

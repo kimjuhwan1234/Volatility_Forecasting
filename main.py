@@ -33,7 +33,7 @@ class Execution:
         trainer = Run(file, self.config)
         trainer.run_model(False)
         trainer.check_validation()
-        trainer.evaluate_testset()
+        trainer.evaluate_testset(self.config['model'].retrain)
 
     # def main(self):
     #     set_start_method('spawn', force=True)
@@ -57,16 +57,18 @@ class Execution:
         if self.config['model'].Transfer:
             file_list = self.get_file_list()
         if not self.config['model'].Transfer:
-            file_list = ['Database/spot_std/SP_vol.csv']
+            file_list = ['Database/future_std/BZ_vol.csv']
 
         for file in file_list:
             print('')
             print(f'{file} will be started...')
             time.sleep(5)
             trainer = Run(file, self.config)
-            trainer.run_model(False)
-            trainer.check_validation()
-            trainer.evaluate_testset(self.config['model'].retrain)
+            if not self.config['model'].Transfer:
+                trainer.run_model(False)
+                trainer.check_validation()
+            if self.config['model'].Transfer:
+                trainer.evaluate_testset(self.config['model'].retrain)
 
 
 if __name__ == "__main__":
