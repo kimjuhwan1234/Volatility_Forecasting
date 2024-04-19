@@ -160,6 +160,7 @@ class Run:
     def evaluate_testset(self, retrain):
         print(' ')
         print('Saving evaluations and predictions for a test set...')
+        self.saving_path=f'Files/BiLSTM/additionalX_{self.file_path[-10:-8]}.csv'
 
         # 처음 while문 들어갈때는 test_dl이 없으므로 만들어 줘야 함. 또한 retrain을 하지 않을 때를 위해서 필요함.
         self.test_data = self.train.loc[self.config['train'].transfer_test_start:self.config['train'].transfer_test_end]
@@ -181,11 +182,11 @@ class Run:
         j = 0
         # 총 예측 가능 날짜만큼 pred가 쌓이면 종료 됨.
         while len(self.pred) < len(pred_index):
+
             # 처음은 retrain을 스킵해야 하기 때문에
             if retrain & (j > 0):
                 self.run_model(True)
-                print(f'{len(pred_index)}: {len(self.pred) / len(pred_index) * 100:.2f}%')
-                time.sleep(3)
+
 
             self.model.eval()
             with ((torch.no_grad())):
@@ -197,13 +198,18 @@ class Run:
                     self.pred.loc[len(self.pred)] = [output, gt]
 
                     # 마지막 시행은 retrain if 문안으로 들어가면 안됨. total로 방지.
+
                     total = (len(self.pred)) / len(pred_index) * 100
                     if retrain & (len(self.pred) % 60 == 0) & (total < 100):
                         '''이 부분에서 self.test_index를 저장하는데 retrain_index를 사용해야 2006-01-01부터 100일 이후 날짜가
                         저장됨. <=> 주기의 마지막 날짜 -20 과 동치.'''
                         self.test_index = retrain_index[len(self.pred)]
                         break
-            j += 1
+            j = 1
+            print(f'\n{len(pred_index)}: {len(self.pred) / len(pred_index) * 100:.2f}%')
+            time.sleep(3)
+
+
 
         self.pred.index = pred_index
         nd = calculate_nd(self.pred['Ground Truths'].values, self.pred['Predictions'].values)

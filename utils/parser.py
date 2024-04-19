@@ -2,14 +2,14 @@ import argparse
 from Modules.model import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--input_size", type=int, default=1, help="input_size")
+parser.add_argument("--input_size", type=int, default=385, help="input_size")
 parser.add_argument("--hidden_size", type=int, default=64, help="hidden_size")
 parser.add_argument("--num_layers", type=int, default=2, help="num_layers")
 parser.add_argument("--output_size", type=int, default=1, help="output_size")
 parser.add_argument("--bidirectional", type=bool, default=True, help="bidirectional")
 
-parser.add_argument("--retrain", type=bool, default=True, help="Retrain")
-parser.add_argument("--Transfer", type=bool, default=True, help="Backbone 훈련이면 True 아니면 False")
+parser.add_argument("--retrain", type=bool, default=False, help="Retrain")
+parser.add_argument("--Transfer", type=bool, default=False, help="Backbone 훈련이면 True 아니면 False")
 parser.add_argument("--additional", type=bool, default=False, help="additional")
 
 parser.add_argument("--backbone1", type=bool, default=True, help="biLSTM")
@@ -31,11 +31,14 @@ parser.add_argument("--patience", type=int, default=3, help="patience")
 parser.add_argument("--use_accelerator", type=bool, default=False, help="use_accelerator")
 parser.add_argument("--use_wandb", type=bool, default=False, help="use_wandb")
 
-parser.add_argument("--backbone_train_end", type=str, default='2005-01-01', help="date")
-parser.add_argument("--backbone_val_end", type=str, default='2006-01-01', help="date")
-parser.add_argument("--transfer_test_start", type=str, default='2006-04-01', help="date")
-parser.add_argument("--transfer_test_end", type=str, default='2009-12-31', help="date")
-
+parser.add_argument("--backbone_train_end", type=str, default='1997-01-01', help="date")
+parser.add_argument("--backbone_val_end", type=str, default='1999-01-01', help="date")
+parser.add_argument("--transfer_test_start", type=str, default='1999-04-01', help="date")
+parser.add_argument("--transfer_test_end", type=str, default='2001-01-01', help="date")
+# weekly 이면 backbone_val_end와 transfer_test_start차이가 최소 5달 차이.
+# monthly 이면 backbone_val_end와 transfer_test_start차이가 최소 4달 차이.
+# 60 이면 backbone_val_end와 transfer_test_start차이가 최소 3달 차이.
+# 120 부터는 backbone_val_end 이후 바로 다음 날짜에 transfer_test_start가 이어져도 됨.
 
 opt_train = parser.parse_args()
 print(opt_train)

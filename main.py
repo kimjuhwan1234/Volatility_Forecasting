@@ -67,8 +67,8 @@ class Execution:
             if not self.config['model'].Transfer:
                 trainer.run_model(False)
                 trainer.check_validation()
-            if self.config['model'].Transfer:
-                trainer.evaluate_testset(self.config['model'].retrain)
+            # if self.config['model'].Transfer:
+            trainer.evaluate_testset(self.config['model'].retrain)
 
 
 if __name__ == "__main__":
