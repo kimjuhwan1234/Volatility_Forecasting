@@ -200,6 +200,7 @@ class Run:
                     # 마지막 시행은 retrain if 문안으로 들어가면 안됨. total로 방지.
 
                     total = (len(self.pred)) / len(pred_index) * 100
+                    # Retrain 주기 바꾸는 곳
                     if retrain & (len(self.pred) % 60 == 0) & (total < 100):
                         '''이 부분에서 self.test_index를 저장하는데 retrain_index를 사용해야 2006-01-01부터 100일 이후 날짜가
                         저장됨. <=> 주기의 마지막 날짜 -20 과 동치.'''

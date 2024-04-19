@@ -6,7 +6,7 @@ import torch
 class CustomDataset(Dataset):
     def __init__(self, data):
         self.data = data
-        self.window_size = 5 * 4
+        self.window_size = 4 * 3
 
     def __len__(self):
         return len(self.data) - self.window_size - 1
@@ -30,7 +30,7 @@ class CustomDataset(Dataset):
 class TestDataset(Dataset):
     def __init__(self, data):
         self.data = data
-        self.window_size = 5 * 4
+        self.window_size = 4 * 3
 
     def __len__(self):
         return len(self.data) - self.window_size - 1
