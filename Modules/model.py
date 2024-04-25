@@ -2,6 +2,8 @@ from torch.nn.functional import mse_loss
 import torch
 import torch.nn as nn
 
+import utils.Metrics as M
+
 
 class stack_BiLSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size, bidirectional, additional):
@@ -81,9 +83,9 @@ class single_biLSTM(nn.Module):
         )
 
         self.backbone = nn.LSTM(input_size, hidden_size, num_layers=num_layers,
-                                bidirectional=True, batch_first=True)
+                                bidirectional=True, batch_first=True).double()
 
-        self.fc = nn.Linear(hidden_size * 2, output_size)
+        self.fc = nn.Linear(hidden_size * 2, output_size).double()
 
     def forward(self, train, gt=None):
         out, _ = self.backbone(train)

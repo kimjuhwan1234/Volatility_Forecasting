@@ -23,10 +23,20 @@ def calculate_rmse(gt, output):
     return rmse
 
 
+def MSE(pred, true):
+    return np.mean((pred - true) ** 2)
+
+
+def RMSE(pred, true):
+    return np.sqrt(MSE(pred, true))
+
+
 def calculate_rmse_v2(gt, output):
+    if output.shape == ():
+        output = output.reshape(1, 1)
     output = output.cpu().detach().numpy()
     gt = gt.cpu().detach().numpy()
-    rmse = np.sqrt(mean_squared_error(gt, output))
+    rmse = RMSE(output, gt)
     return rmse
 
 

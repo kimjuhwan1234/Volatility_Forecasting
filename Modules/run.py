@@ -176,7 +176,7 @@ class Run:
         retrain_index = self.test_data.index
 
         # Needed to load weights after model training and test them later.
-        # self.model.load_state_dict(torch.load(self.weight_path))
+        self.model.load_state_dict(torch.load(self.weight_path))
         self.model.to(self.device)
 
         j = 0

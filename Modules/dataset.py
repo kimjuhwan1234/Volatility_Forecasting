@@ -6,10 +6,10 @@ import torch
 class CustomDataset(Dataset):
     def __init__(self, data):
         self.data = data
-        self.window_size = 4 * 3
+        self.window_size = 3 * 4
 
     def __len__(self):
-        return len(self.data) - self.window_size - 1
+        return len(self.data) - self.window_size
 
     def __getitem__(self, index):
         start_index = index
@@ -21,8 +21,8 @@ class CustomDataset(Dataset):
         X_train = self.data.iloc[start_index:end_index, :]
         y_train = self.data.iloc[end_index:end_index + 1, 0]
 
-        X_train_tensor = torch.Tensor(X_train.values)
-        y_train_tensor = torch.Tensor(y_train.values)
+        X_train_tensor = torch.tensor(X_train.values)
+        y_train_tensor = torch.tensor(y_train.values)
 
         return X_train_tensor, y_train_tensor
 
@@ -30,10 +30,10 @@ class CustomDataset(Dataset):
 class TestDataset(Dataset):
     def __init__(self, data):
         self.data = data
-        self.window_size = 4 * 3
+        self.window_size = 3 * 4
 
     def __len__(self):
-        return len(self.data) - self.window_size - 1
+        return len(self.data) - self.window_size
 
     def __getitem__(self, index):
         start_index = index
@@ -43,7 +43,7 @@ class TestDataset(Dataset):
             raise IndexError("Index out of bounds. Reached the end of the dataset.")
 
         X_train = self.data.iloc[start_index:end_index, :]
-        X_train_tensor = torch.Tensor(X_train.values)
+        X_train_tensor = torch.tensor(X_train.values)
 
         gt = self.data.iloc[end_index, 0]
 
