@@ -2,8 +2,6 @@ from torch.nn.functional import mse_loss
 import torch
 import torch.nn as nn
 
-import utils.Metrics as M
-
 
 class stack_BiLSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size, bidirectional, additional):
