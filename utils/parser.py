@@ -3,7 +3,7 @@ from Modules.model import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--input_size", type=int, default=1, help="input_size")
-parser.add_argument("--hidden_size", type=int, default=12, help="hidden_size")
+parser.add_argument("--hidden_size", type=int, default=128, help="hidden_size")
 parser.add_argument("--num_layers", type=int, default=2, help="num_layers")
 parser.add_argument("--output_size", type=int, default=1, help="output_size")
 parser.add_argument("--bidirectional", type=bool, default=True, help="bidirectional")
