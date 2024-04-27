@@ -1,6 +1,7 @@
 from torch.nn.functional import mse_loss
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 class stack_BiLSTM(nn.Module):

@@ -2,8 +2,8 @@ import argparse
 from Modules.model import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--input_size", type=int, default=1, help="input_size")
-parser.add_argument("--hidden_size", type=int, default=128, help="hidden_size")
+parser.add_argument("--input_size", type=int, default=2, help="input_size")
+parser.add_argument("--hidden_size", type=int, default=64, help="hidden_size")
 parser.add_argument("--num_layers", type=int, default=2, help="num_layers")
 parser.add_argument("--output_size", type=int, default=1, help="output_size")
 parser.add_argument("--bidirectional", type=bool, default=True, help="bidirectional")
@@ -25,7 +25,7 @@ parser.add_argument("--seed", type=int, default=0, help="seed")
 parser.add_argument("--num_workers", type=int, default=4, help="num_workers")
 parser.add_argument("--device", type=str, default='cuda', help="device")
 parser.add_argument("--epochs", type=int, default=50, help="epochs")
-parser.add_argument("--batch_size", type=int, default=4, help="batch_size")
+parser.add_argument("--batch_size", type=int, default=16, help="batch_size")
 parser.add_argument("--lr", type=float, default=0.001, help="learning rate")
 parser.add_argument("--patience", type=int, default=3, help="patience")
 parser.add_argument("--use_accelerator", type=bool, default=False, help="use_accelerator")
@@ -39,6 +39,7 @@ parser.add_argument("--transfer_test_end", type=str, default='2001-01-01', help=
 # monthly 이면 backbone_val_end와 transfer_test_start차이가 최소 4달 차이.
 # 60 이면 backbone_val_end와 transfer_test_start차이가 최소 3달 차이.
 # 120 부터는 backbone_val_end 이후 바로 다음 날짜에 transfer_test_start가 이어져도 됨.
+# 1997-01, 1999-01, 1999-04, 2001-01 backbone 임베딩
 
 opt_train = parser.parse_args()
 print(opt_train)

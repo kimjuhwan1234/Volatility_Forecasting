@@ -1,6 +1,6 @@
 from utils.Metrics import *
 from Modules.train import *
-from torch.optim import Adam
+from torch.optim import AdamW
 from utils.seed import seed_everything
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
@@ -60,6 +60,7 @@ class Run:
             # 1999년부터 2000년 까지가 validation. 전처리에서 애초에 2000년 12월에 끝나게 해둠. -> parser에서 수정하게 바꿈.
             val_data = self.train.loc[
                        self.config['train'].backbone_train_end:self.config['train'].backbone_val_end]
+            train_data, val_data = train_test_split(self.train, test_size=0.2, random_state=42, shuffle=False)
             train_dataset = CustomDataset(train_data)
             val_dataset = CustomDataset(val_data)
             dataloaders = {
@@ -104,11 +105,11 @@ class Run:
             num_features = self.model.fc.in_features
             self.model.fc = nn.Linear(num_features, self.config['model'].output_size)
             self.model.to(self.device)
-            opt = Adam(self.model.fc.parameters(), lr=self.lr)
+            opt = AdamW(self.model.fc.parameters(), lr=self.lr)
 
         # retraining이 False이면 self.model이 없기 때문에 선언해줘야 함.
         if not retraining:
-            opt = Adam(self.model.parameters(), lr=self.lr)
+            opt = AdamW(self.model.parameters(), lr=self.lr)
             self.model.to(self.device)
 
         lr_scheduler = ReduceLROnPlateau(opt, mode='min', factor=0.2, patience=self.config['train'].patience)
