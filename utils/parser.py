@@ -34,7 +34,7 @@ parser.add_argument("--use_wandb", type=bool, default=False, help="use_wandb")
 parser.add_argument("--backbone_train_end", type=str, default='1997-01-01', help="date")
 parser.add_argument("--backbone_val_end", type=str, default='1999-01-01', help="date")
 parser.add_argument("--transfer_test_start", type=str, default='1999-04-01', help="date")
-parser.add_argument("--transfer_test_end", type=str, default='2001-01-01', help="date")
+parser.add_argument("--transfer_test_end", type=str, default='2002-01-01', help="date")
 # weekly 이면 backbone_val_end와 transfer_test_start차이가 최소 5달 차이.
 # monthly 이면 backbone_val_end와 transfer_test_start차이가 최소 4달 차이.
 # 60 이면 backbone_val_end와 transfer_test_start차이가 최소 3달 차이.
