@@ -27,7 +27,7 @@ class Run:
         self.train = pd.read_csv(self.file_path, index_col=0)
 
         self.model = self.config['structure']
-        self.weight_path = f'Weight/{self.file_path[-10:-8]}.pth'
+        self.weight_path = f'Weight/weight.pth'
 
         # Transfer learning and Backbone Model 여부에 따라 weight 저장 위치를 달리함.
         if not self.config['model'].Transfer:
@@ -55,12 +55,10 @@ class Run:
 
         # 처음 훈련할 때 load_data 설정.
         if not retraining:
-            # Backbone 훈련을 위한 설정. 1986년 부터 1999년 까지를 훈련데이터로 씀 -> parser에서 수정하게 바꿈.
-            train_data = self.train.loc[:self.config['train'].backbone_train_end]
-            # 1999년부터 2000년 까지가 validation. 전처리에서 애초에 2000년 12월에 끝나게 해둠. -> parser에서 수정하게 바꿈.
-            val_data = self.train.loc[
-                       self.config['train'].backbone_train_end:self.config['train'].backbone_val_end]
-            train_data, val_data = train_test_split(self.train, test_size=0.2, random_state=42, shuffle=False)
+            train = self.train.loc[:self.config['train'].backbone_val_end]
+            print(len(train))
+
+            train_data, val_data = train_test_split(train, test_size=0.2, random_state=42, shuffle=False)
             train_dataset = CustomDataset(train_data)
             val_dataset = CustomDataset(val_data)
             dataloaders = {
@@ -71,13 +69,13 @@ class Run:
         # retraining 할때 설정.
         if retraining:
             # validation이 끝나는 시점부터 retrain data로 사용함.
-            data = self.train.loc[self.config['train'].backbone_val_end:self.test_index]
+            data = self.train.loc['2001-01-01':self.test_index]
             train_data, val_data = train_test_split(data, test_size=0.2, random_state=42, shuffle=False)
             train_dataset = CustomDataset(train_data)
             val_dataset = CustomDataset(val_data)
             dataloaders = {
-                'train': DataLoader(train_dataset, batch_size=4, shuffle=False),
-                'val': DataLoader(val_dataset, batch_size=4, shuffle=False),
+                'train': DataLoader(train_dataset, batch_size=self.batch_size, shuffle=False),
+                'val': DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False),
             }
 
             '''retrain 주기만큼 예측이 끊나면 주기의 마지막 날짜 -20을 self.test_index에 저장하게 됨. 그 이유는 retrain 예측이 
@@ -103,9 +101,9 @@ class Run:
             for param in self.model.parameters():
                 param.requires_grad = False
             num_features = self.model.fc.in_features
-            self.model.fc = nn.Linear(num_features, self.config['model'].output_size)
-            self.model.to(self.device)
+            self.model.fc = nn.Linear(num_features, self.config['model'].output_size).double()
             opt = AdamW(self.model.fc.parameters(), lr=self.lr)
+            self.model.to(self.device)
 
         # retraining이 False이면 self.model이 없기 때문에 선언해줘야 함.
         if not retraining:
@@ -161,10 +159,11 @@ class Run:
     def evaluate_testset(self, retrain):
         print(' ')
         print('Saving evaluations and predictions for a test set...')
-        self.saving_path=f'Files/BiLSTM/additionalX_{self.file_path[-10:-8]}.csv'
+        self.saving_path = f'Files/BiLSTM/additionalX_{self.file_path[-10:-8]}.csv'
 
         # 처음 while문 들어갈때는 test_dl이 없으므로 만들어 줘야 함. 또한 retrain을 하지 않을 때를 위해서 필요함.
         self.test_data = self.train.loc[self.config['train'].transfer_test_start:self.config['train'].transfer_test_end]
+        # self.test_data = self.train.iloc[-40:]
         self.test_dataset = TestDataset(self.test_data)
         self.test_dl = DataLoader(self.test_dataset, batch_size=1, shuffle=False)
 
@@ -177,7 +176,8 @@ class Run:
         retrain_index = self.test_data.index
 
         # Needed to load weights after model training and test them later.
-        self.model.load_state_dict(torch.load(self.weight_path))
+        # print(self.weight_path)
+        # self.model.load_state_dict(torch.load(self.weight_path))
         self.model.to(self.device)
 
         j = 0
@@ -187,7 +187,6 @@ class Run:
             # 처음은 retrain을 스킵해야 하기 때문에
             if retrain & (j > 0):
                 self.run_model(True)
-
 
             self.model.eval()
             with ((torch.no_grad())):
@@ -201,17 +200,17 @@ class Run:
                     # 마지막 시행은 retrain if 문안으로 들어가면 안됨. total로 방지.
 
                     total = (len(self.pred)) / len(pred_index) * 100
+                    # (len(self.pred) % 60 == 0) &
                     # Retrain 주기 바꾸는 곳
-                    if retrain & (len(self.pred) % 60 == 0) & (total < 100):
+                    if retrain & (total < 100):
                         '''이 부분에서 self.test_index를 저장하는데 retrain_index를 사용해야 2006-01-01부터 100일 이후 날짜가
                         저장됨. <=> 주기의 마지막 날짜 -20 과 동치.'''
                         self.test_index = retrain_index[len(self.pred)]
+                        print(self.test_index)
                         break
             j = 1
-            print(f'\n{len(pred_index)}: {len(self.pred) / len(pred_index) * 100:.2f}%')
+            print(f'\n{len(self.pred)}/{len(pred_index)}: {len(self.pred) / len(pred_index) * 100:.2f}%')
             time.sleep(3)
-
-
 
         self.pred.index = pred_index
         nd = calculate_nd(self.pred['Ground Truths'].values, self.pred['Predictions'].values)
