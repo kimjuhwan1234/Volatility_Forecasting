@@ -35,9 +35,6 @@ class Run:
                 self.weight_path = f'Weight/Backbone/BiLSTM_{self.file_path[-10:-8]}.pth'
 
             if self.config['model'].backbone2:
-                self.weight_path = f'Weight/Backbone/stackBiLSTM_{self.file_path[-10:-8]}.pth'
-
-            if self.config['model'].backbone3:
                 self.weight_path = f'Weight/Backbone/MLP_{self.file_path[-10:-8]}.pth'
 
         if self.config['model'].Transfer:
@@ -45,9 +42,6 @@ class Run:
                 self.saving_path = f'Files/BiLSTM/additionalX_{self.file_path[-10:-8]}.csv'
 
             if self.config['model'].backbone2:
-                self.saving_path = f'Files/stackBiLSTM/additionalX_{self.file_path[-10:-8]}.csv'
-
-            if self.config['model'].backbone3:
                 self.saving_path = f'Files/MLP/additionalX_{self.file_path[-10:-8]}.csv'
 
     def load_data(self, retraining):

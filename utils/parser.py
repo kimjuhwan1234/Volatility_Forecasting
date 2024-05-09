@@ -2,7 +2,7 @@ import argparse
 from Modules.model import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--input_size", type=int, default=6, help="input_size")
+parser.add_argument("--input_size", type=int, default=10, help="input_size")
 parser.add_argument("--hidden_size", type=int, default=64, help="hidden_size")
 parser.add_argument("--num_layers", type=int, default=2, help="num_layers")
 parser.add_argument("--output_size", type=int, default=1, help="output_size")
@@ -13,8 +13,7 @@ parser.add_argument("--Transfer", type=bool, default=False, help="Backbone í›ˆë 
 parser.add_argument("--additional", type=bool, default=False, help="additional")
 
 parser.add_argument("--backbone1", type=bool, default=True, help="biLSTM")
-parser.add_argument("--backbone2", type=bool, default=False, help="stackbiLSTM")
-parser.add_argument("--backbone3", type=bool, default=False, help="MLP")
+parser.add_argument("--backbone2", type=bool, default=False, help="MLP")
 
 opt_model = parser.parse_args()
 print(opt_model)
@@ -48,29 +47,18 @@ backbone1 = single_biLSTM(input_size=opt_model.input_size, hidden_size=opt_model
                           num_layers=opt_model.num_layers, output_size=opt_model.output_size,
                           additional=opt_model.additional)
 
-backbone2 = stack_BiLSTM(input_size=opt_model.input_size, hidden_size=opt_model.hidden_size,
-                         num_layers=opt_model.num_layers, output_size=opt_model.output_size,
-                         bidirectional=opt_model.bidirectional, additional=opt_model.additional)
-
-backbone3 = MLP(input_size=opt_model.input_size, hidden_size=opt_model.hidden_size, output_size=opt_model.output_size)
+backbone2 = MLP(input_size=opt_model.input_size, hidden_size=opt_model.hidden_size, output_size=opt_model.output_size)
 # ---------------------------------------------------------------------------------------------------------------------#
 config = dict()
 config['model'] = opt_model
 config['train'] = opt_train
 
 if opt_model.backbone1:
-    backbone_weight_path = 'Weight/Backbone/BiLSTM_SP.pth'
-    backbone1.load_state_dict(torch.load(backbone_weight_path))
+    # backbone_weight_path = 'Weight/Backbone/BiLSTM_SP.pth'
+    # backbone1.load_state_dict(torch.load(backbone_weight_path))
     config['structure'] = backbone1
 
-
 if opt_model.backbone2:
-    backbone_weight_path = 'Weight/Backbone/stackBiLSTM_SP.pth'
+    backbone_weight_path = 'Weight/Backbone/MLP_SP.pth'
     backbone2.load_state_dict(torch.load(backbone_weight_path))
     config['structure'] = backbone2
-
-
-if opt_model.backbone3:
-    backbone_weight_path = 'Weight/Backbone/MLP_SP.pth'
-    backbone3.load_state_dict(torch.load(backbone_weight_path))
-    config['structure'] = backbone3
