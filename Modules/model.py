@@ -19,10 +19,10 @@ class single_biLSTM(nn.Module):
 
         # 첫 번째 LSTM 층
         self.backbone = nn.LSTM(input_size, hidden_size, num_layers=num_layers,
-                             bidirectional=True, batch_first=True).double()
+                                bidirectional=True, batch_first=True).double()
 
         # 두 번째 LSTM 층
-        self.lstm2 = nn.LSTM(hidden_size*2, int(hidden_size/2), num_layers=num_layers,
+        self.lstm2 = nn.LSTM(hidden_size * 2, int(hidden_size / 2), num_layers=num_layers,
                              bidirectional=True, batch_first=True).double()
 
         # 세 번째 LSTM 층
