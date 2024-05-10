@@ -37,12 +37,11 @@ class Run:
             if self.config['model'].backbone2:
                 self.weight_path = f'Weight/Backbone/MLP_{self.file_path[-10:-8]}.pth'
 
-        if self.config['model'].Transfer:
-            if self.config['model'].backbone1:
-                self.saving_path = f'Files/BiLSTM/additionalX_{self.file_path[-10:-8]}.csv'
+        if self.config['model'].backbone1:
+            self.saving_path = f'Files/BiLSTM/additionalX_{self.file_path[-10:-8]}.csv'
 
-            if self.config['model'].backbone2:
-                self.saving_path = f'Files/MLP/additionalX_{self.file_path[-10:-8]}.csv'
+        if self.config['model'].backbone2:
+            self.saving_path = f'Files/MLP/additionalX_{self.file_path[-10:-8]}.csv'
 
     def load_data(self, retraining):
         print('Loading data...')
@@ -153,7 +152,6 @@ class Run:
     def evaluate_testset(self, retrain):
         print(' ')
         print('Saving evaluations and predictions for a test set...')
-        self.saving_path = f'Files/BiLSTM/additionalX_{self.file_path[-10:-8]}.csv'
 
         # 처음 while문 들어갈때는 test_dl이 없으므로 만들어 줘야 함. 또한 retrain을 하지 않을 때를 위해서 필요함.
         self.test_data = self.train.loc[self.config['train'].transfer_test_start:self.config['train'].transfer_test_end]
