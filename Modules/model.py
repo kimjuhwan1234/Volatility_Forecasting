@@ -4,10 +4,16 @@ import torch.nn as nn
 
 
 class single_biLSTM(nn.Module):
-    def __init__(self, input_size, hidden_size, num_layers, output_size, additional):
+    def __init__(self, input_size, hidden_size, num_layers, output_size, additional, bidirectional):
         super(single_biLSTM, self).__init__()
 
         self.additional = additional
+
+        if bidirectional:
+            hidden_size2=hidden_size*2
+
+        if not bidirectional:
+            hidden_size2=hidden_size
 
         # 출력을 위한 선형 레이어
         self.additional_layer = nn.Sequential(
@@ -19,17 +25,17 @@ class single_biLSTM(nn.Module):
 
         # 첫 번째 LSTM 층
         self.backbone = nn.LSTM(input_size, hidden_size, num_layers=num_layers,
-                                bidirectional=True, batch_first=True).double()
+                                bidirectional=bidirectional, batch_first=True).double()
 
         # 두 번째 LSTM 층
-        self.lstm2 = nn.LSTM(hidden_size * 2, int(hidden_size / 2), num_layers=num_layers,
-                             bidirectional=True, batch_first=True).double()
+        self.lstm2 = nn.LSTM(hidden_size2, int(hidden_size / 2), num_layers=num_layers,
+                             bidirectional=bidirectional, batch_first=True).double()
 
         # 세 번째 LSTM 층
         self.lstm3 = nn.LSTM(hidden_size, hidden_size, num_layers=num_layers,
-                             bidirectional=True, batch_first=True).double()
+                             bidirectional=bidirectional, batch_first=True).double()
 
-        self.fc = nn.Linear(hidden_size * 2, output_size).double()
+        self.fc = nn.Linear(hidden_size2, output_size).double()
 
     def forward(self, train, gt=None):
 
