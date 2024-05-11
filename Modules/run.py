@@ -154,7 +154,7 @@ class Run:
         print('Saving evaluations and predictions for a test set...')
 
         # 처음 while문 들어갈때는 test_dl이 없으므로 만들어 줘야 함. 또한 retrain을 하지 않을 때를 위해서 필요함.
-        self.test_data = self.train.loc[self.config['train'].transfer_val_end:self.config['train'].transfer_test_end]
+        self.test_data = self.train.loc[self.config['train'].backbone_val_end:self.config['train'].transfer_test_end]
         # self.test_data = self.train.iloc[-40:]
         self.test_dataset = TestDataset(self.test_data)
         self.test_dl = DataLoader(self.test_dataset, batch_size=1, shuffle=False)
