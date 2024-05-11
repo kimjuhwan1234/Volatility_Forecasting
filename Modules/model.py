@@ -1,6 +1,7 @@
 from torch.nn.functional import mse_loss
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 class single_biLSTM(nn.Module):
@@ -10,10 +11,10 @@ class single_biLSTM(nn.Module):
         self.additional = additional
 
         if bidirectional:
-            hidden_size2=hidden_size*2
+            hidden_size2 = hidden_size * 2
 
         if not bidirectional:
-            hidden_size2=hidden_size
+            hidden_size2 = hidden_size
 
         # 출력을 위한 선형 레이어
         self.additional_layer = nn.Sequential(
@@ -22,6 +23,8 @@ class single_biLSTM(nn.Module):
             nn.Dropout(0.1),
             nn.Linear(hidden_size, hidden_size * 2),
         )
+
+        self.bn = nn.BatchNorm1d(20).double()
 
         # 첫 번째 LSTM 층
         self.backbone = nn.LSTM(input_size, hidden_size, num_layers=num_layers,
@@ -38,8 +41,8 @@ class single_biLSTM(nn.Module):
         self.fc = nn.Linear(hidden_size2, output_size).double()
 
     def forward(self, train, gt=None):
-
         out, _ = self.backbone(train)
+        # out = F.relu(self.bn(x))
         # x, _ = self.lstm2(x)
         # out, _ = self.lstm3(x)
 
@@ -47,6 +50,7 @@ class single_biLSTM(nn.Module):
             out = self.additional_layer(out)
 
         output = self.fc(out)
+        # output = F.relu(self.bn(output))
 
         output = output[:, -1, :]
 

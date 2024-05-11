@@ -1,4 +1,4 @@
-from utils.Metrics import calculate_rmse_v2
+from utils.Metrics import calculate_MAE
 
 import sys
 import time
@@ -41,7 +41,7 @@ class Train_Module:
                 total_loss += loss
 
                 # accuracy = self.calculate_adjusted_r2_score(output, gt, data.shape[1], data.shape[2])
-                accuracy = calculate_rmse_v2(gt, output)
+                accuracy = calculate_MAE(gt, output)
                 total_accuracy += accuracy
 
             total_loss = total_loss / len_data
@@ -70,7 +70,7 @@ class Train_Module:
 
             total_loss += loss
             # accuracy = self.calculate_adjusted_r2_score(output, gt, data.shape[1], data.shape[2])
-            accuracy = calculate_rmse_v2(gt, output)
+            accuracy = calculate_MAE(gt, output)
             total_accuracy += accuracy
 
         total_loss = total_loss / len_data
@@ -116,7 +116,7 @@ class Train_Module:
             lr_scheduler.step(val_loss)
 
             print(f'train loss: {train_loss:.10f}, val loss: {val_loss:.10f}')
-            print(f'RMSE: {val_accuracy:.10f} , time: {(time.time() - start_time) / 60:.2f}')
+            print(f'MAE: {val_accuracy:.10f} , time: {(time.time() - start_time) / 60:.2f}')
 
             print(' ')
 

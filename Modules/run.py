@@ -1,6 +1,6 @@
 from utils.Metrics import *
 from Modules.train import *
-from torch.optim import AdamW
+from torch.optim import Adam
 from utils.seed import seed_everything
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
@@ -95,12 +95,12 @@ class Run:
                 param.requires_grad = False
             num_features = self.model.fc.in_features
             self.model.fc = nn.Linear(num_features, self.config['model'].output_size).double()
-            opt = AdamW(self.model.fc.parameters(), lr=self.lr)
+            opt = Adam(self.model.fc.parameters(), lr=self.lr)
             self.model.to(self.device)
 
         # retraining이 False이면 self.model이 없기 때문에 선언해줘야 함.
         if not retraining:
-            opt = AdamW(self.model.parameters(), lr=self.lr)
+            opt = Adam(self.model.parameters(), lr=self.lr)
             self.model.to(self.device)
 
         lr_scheduler = ReduceLROnPlateau(opt, mode='min', factor=0.2, patience=self.config['train'].patience)
@@ -139,15 +139,15 @@ class Run:
         plt.show()
 
         # plot accuracy progress
-        plt.title("Train-Val RMSE")
+        plt.title("Train-Val MAE")
         plt.plot(range(1, self.epochs + 1), metric_hist_numpy.iloc[:, 0], label="train")
         plt.plot(range(1, self.epochs + 1), metric_hist_numpy.iloc[:, 1], label="val")
-        plt.ylabel("RMSE")
+        plt.ylabel("MAE")
         plt.xlabel("Training Epochs")
         plt.legend()
         plt.show()
 
-        print('Finished checking loss and RMSE!')
+        print('Finished checking loss and MAE!')
 
     def evaluate_testset(self, retrain):
         print(' ')

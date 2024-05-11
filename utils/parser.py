@@ -2,15 +2,15 @@ import argparse
 from Modules.model import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--input_size", type=int, default=10, help="input_size")
+parser.add_argument("--input_size", type=int, default=1, help="input_size")
 parser.add_argument("--hidden_size", type=int, default=64, help="hidden_size")
 parser.add_argument("--num_layers", type=int, default=2, help="num_layers")
 parser.add_argument("--output_size", type=int, default=1, help="output_size")
-parser.add_argument("--bidirectional", type=bool, default=True, help="bidirectional")
 
 parser.add_argument("--retrain", type=bool, default=False, help="Retrain")
 parser.add_argument("--Transfer", type=bool, default=False, help="Backbone 훈련이면 False 아니면 True")
 parser.add_argument("--additional", type=bool, default=False, help="additional")
+parser.add_argument("--bidirectional", type=bool, default=True, help="bidirectional")
 
 parser.add_argument("--backbone1", type=bool, default=True, help="biLSTM")
 parser.add_argument("--backbone2", type=bool, default=False, help="MLP")
@@ -54,8 +54,8 @@ config['model'] = opt_model
 config['train'] = opt_train
 
 if opt_model.backbone1:
-    # backbone_weight_path = 'Weight/Backbone/BiLSTM_SP.pth'
-    # backbone1.load_state_dict(torch.load(backbone_weight_path))
+    backbone_weight_path = 'Weight/Backbone/BiLSTM_SP.pth'
+    backbone1.load_state_dict(torch.load(backbone_weight_path))
     config['structure'] = backbone1
 
 if opt_model.backbone2:

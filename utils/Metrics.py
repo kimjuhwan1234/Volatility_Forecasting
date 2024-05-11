@@ -23,6 +23,10 @@ def calculate_rmse(gt, output):
     return rmse
 
 
+def MAE(pred, true):
+    return np.mean(np.abs((pred - true)))
+
+
 def MSE(pred, true):
     return np.mean((pred - true) ** 2)
 
@@ -31,13 +35,13 @@ def RMSE(pred, true):
     return np.sqrt(MSE(pred, true))
 
 
-def calculate_rmse_v2(gt, output):
+def calculate_MAE(gt, output):
     if output.shape == ():
         output = output.reshape(1, 1)
     output = output.cpu().detach().numpy()
     gt = gt.cpu().detach().numpy()
-    rmse = RMSE(output, gt)
-    return rmse
+    mae = MAE(output, gt)
+    return mae
 
 
 def calculate_adjusted_r2_score(gt, output, n, p):
