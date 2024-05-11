@@ -1,6 +1,6 @@
 from utils.Metrics import *
 from Modules.train import *
-from torch.optim import AdamW
+from torch.optim import Adam
 from utils.seed import seed_everything
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
@@ -95,12 +95,12 @@ class Run:
                 param.requires_grad = False
             num_features = self.model.fc.in_features
             self.model.fc = nn.Linear(num_features, self.config['model'].output_size).double()
-            opt = AdamW(self.model.fc.parameters(), lr=self.lr)
+            opt = Adam(self.model.fc.parameters(), lr=self.lr)
             self.model.to(self.device)
 
         # retraining이 False이면 self.model이 없기 때문에 선언해줘야 함.
         if not retraining:
-            opt = AdamW(self.model.parameters(), lr=self.lr)
+            opt = Adam(self.model.parameters(), lr=self.lr)
             self.model.to(self.device)
 
         lr_scheduler = ReduceLROnPlateau(opt, mode='min', factor=0.2, patience=self.config['train'].patience)
@@ -154,7 +154,7 @@ class Run:
         print('Saving evaluations and predictions for a test set...')
 
         # 처음 while문 들어갈때는 test_dl이 없으므로 만들어 줘야 함. 또한 retrain을 하지 않을 때를 위해서 필요함.
-        self.test_data = self.train.loc[self.config['train'].transfer_test_start:self.config['train'].transfer_test_end]
+        self.test_data = self.train.loc[self.config['train'].transfer_val_end:self.config['train'].transfer_test_end]
         # self.test_data = self.train.iloc[-40:]
         self.test_dataset = TestDataset(self.test_data)
         self.test_dl = DataLoader(self.test_dataset, batch_size=1, shuffle=False)
@@ -205,17 +205,15 @@ class Run:
             time.sleep(3)
 
         self.pred.index = pred_index
-        nd = calculate_nd(self.pred['Ground Truths'].values, self.pred['Predictions'].values)
         mae = calculate_mae(self.pred['Ground Truths'].values, self.pred['Predictions'].values)
         rmse = calculate_rmse(self.pred['Ground Truths'].values, self.pred['Predictions'].values)
         ad_r2 = calculate_adjusted_r2_score(self.pred['Ground Truths'].values, self.pred['Predictions'].values, 20, 2)
-        self.pred.loc[len(self.pred)] = [nd, ad_r2]
+        self.pred.loc[len(self.pred)] = [0, ad_r2]
         self.pred.loc[len(self.pred)] = [mae, rmse]
         self.pred.to_csv(self.saving_path)
 
         print(' ')
         print(f'Model: {self.weight_path}')
-        print(f'ND: {nd:.4f}')
         print(f'MAE: {mae}')
         print(f'RMSE: {rmse}')
         print(f'adjusted-R^2: {ad_r2:.4f}')
