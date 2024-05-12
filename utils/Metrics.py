@@ -48,3 +48,8 @@ def calculate_adjusted_r2_score(gt, output, n, p):
     r2 = r2_score(gt, output)
     adjusted_r2 = 1 - ((1 - r2) * (n - 1) / (n - p - 1))
     return adjusted_r2
+
+
+def calculate_r2_score(gt, output):
+    r2 = r2_score(gt, output)
+    return r2

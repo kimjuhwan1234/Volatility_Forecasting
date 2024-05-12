@@ -166,10 +166,6 @@ class Run:
         '''2006-01-01부터 시작하는 첫 test_data의 index가 저장될 필요가 있음. self.test_data는 계속 변하기 때문에 
         self_data.index를 사용하면 안됨.'''
         retrain_index = self.test_data.index
-
-        # Needed to load weights after model training and test them later.
-        # print(self.weight_path)
-        # self.model.load_state_dict(torch.load(self.weight_path))
         self.model.to(self.device)
 
         j = 0
@@ -179,6 +175,8 @@ class Run:
             # 처음은 retrain을 스킵해야 하기 때문에
             if retrain & (j > 0):
                 self.run_model(True)
+                # Needed to load best weights after retraining.
+                self.model.load_state_dict(torch.load(self.weight_path))
 
             self.model.eval()
             with ((torch.no_grad())):
@@ -208,6 +206,7 @@ class Run:
         mae = calculate_mae(self.pred['Ground Truths'].values, self.pred['Predictions'].values)
         rmse = calculate_rmse(self.pred['Ground Truths'].values, self.pred['Predictions'].values)
         ad_r2 = calculate_adjusted_r2_score(self.pred['Ground Truths'].values, self.pred['Predictions'].values, 20, 2)
+        r2=calculate_r2_score(self.pred['Ground Truths'].values, self.pred['Predictions'].values)
         self.pred.loc[len(self.pred)] = [0, ad_r2]
         self.pred.loc[len(self.pred)] = [mae, rmse]
         self.pred.to_csv(self.saving_path)
@@ -216,5 +215,6 @@ class Run:
         print(f'Model: {self.weight_path}')
         print(f'MAE: {mae}')
         print(f'RMSE: {rmse}')
+        print(f'R^2: {r2:.4f}')
         print(f'adjusted-R^2: {ad_r2:.4f}')
         print(f"Saved Result in {self.saving_path}!")
