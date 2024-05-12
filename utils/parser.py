@@ -53,8 +53,8 @@ config['model'] = opt_model
 config['train'] = opt_train
 
 if opt_model.backbone1:
-    # backbone_weight_path = 'Weight/Backbone/BiLSTM_SP.pth'
-    # backbone1.load_state_dict(torch.load(backbone_weight_path))
+    backbone_weight_path = 'Weight/Backbone/BiLSTM_SP.pth'
+    backbone1.load_state_dict(torch.load(backbone_weight_path))
     config['structure'] = backbone1
 
 if opt_model.backbone2:

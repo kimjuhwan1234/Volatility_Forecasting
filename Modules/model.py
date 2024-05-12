@@ -32,26 +32,26 @@ class single_biLSTM(nn.Module):
 
         # 두 번째 LSTM 층
         self.lstm2 = nn.LSTM(hidden_size2, int(hidden_size / 2), num_layers=num_layers,
-                             bidirectional=bidirectional, dropout=0.02, batch_first=True).double()
+                             bidirectional=bidirectional, batch_first=True).double()
 
         # 세 번째 LSTM 층
         self.lstm3 = nn.LSTM(hidden_size, hidden_size, num_layers=num_layers,
-                             bidirectional=bidirectional, dropout=0.01, batch_first=True).double()
+                             bidirectional=bidirectional, batch_first=True).double()
 
         self.fc = nn.Linear(hidden_size2, output_size).double()
 
     def forward(self, train, gt=None):
         out, _ = self.backbone(train)
-        out = self.bn(out)
-        x, _ = self.lstm2(out)
-        x = self.bn(x)
-        out, _ = self.lstm3(x)
+        # out = self.bn(out)
+        # x, _ = self.lstm2(out)
+        # x = self.bn(x)
+        # out, _ = self.lstm3(x)
 
         if self.additional:
             out = self.additional_layer(out)
 
         output = self.fc(out)
-        # output = F.relu(self.bn(output))
+        # output = self.bn(output)
 
         output = output[:, -1, :]
 
