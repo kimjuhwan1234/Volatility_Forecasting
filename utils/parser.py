@@ -23,16 +23,17 @@ parser.add_argument("--model_saving_strategy", type=str, default='better', help=
 parser.add_argument("--seed", type=int, default=0, help="seed")
 parser.add_argument("--num_workers", type=int, default=4, help="num_workers")
 parser.add_argument("--device", type=str, default='cuda', help="device")
-parser.add_argument("--epochs", type=int, default=100, help="epochs")
+parser.add_argument("--epochs", type=int, default=50, help="epochs")
 parser.add_argument("--batch_size", type=int, default=32, help="batch_size")
 parser.add_argument("--lr", type=float, default=0.001, help="learning rate")
-parser.add_argument("--patience", type=int, default=3, help="patience")
+parser.add_argument("--patience", type=int, default=10, help="patience")
 parser.add_argument("--use_accelerator", type=bool, default=False, help="use_accelerator")
 parser.add_argument("--use_wandb", type=bool, default=False, help="use_wandb")
 
 # parser.add_argument("--backbone_train_end", type=str, default='2020-01-01', help="date")
 parser.add_argument("--backbone_val_end", type=str, default='2005-01-01', help="date")
-parser.add_argument("--transfer_test_end", type=str, default='2023-01-01', help="date")
+parser.add_argument("--transfer_test_end", type=str, default='2010-01-01', help="date")
+parser.add_argument("--backbone_weight_path", type=str, default='Weight/Backbone/BiLSTM_SP_SP500.pth', help="weight")
 # weekly 이면 backbone_val_end와 transfer_test_start차이가 최소 5달 차이.
 # monthly 이면 backbone_val_end와 transfer_test_start차이가 최소 4달 차이.
 # 60 이면 backbone_val_end와 transfer_test_start차이가 최소 3달 차이.

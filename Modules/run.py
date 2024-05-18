@@ -91,10 +91,6 @@ class Run:
 
         # retraining이 True이면 self.model이 이미 선언되었을 것임.
         if retraining:
-            for param in self.model.parameters():
-                param.requires_grad = False
-            num_features = self.model.fc.in_features
-            self.model.fc = nn.Linear(num_features, self.config['model'].output_size).double()
             opt = Adam(self.model.fc.parameters(), lr=self.lr)
             self.model.to(self.device)
 
@@ -115,7 +111,7 @@ class Run:
             'lr_scheduler': lr_scheduler,
         }
 
-        TM = Train_Module(self.device)
+        TM = Train_Module(self.device, self.config['train'].patience)
         self.model, self.loss_hist, self.metric_hist = TM.train_and_eval(self.model, parameters)
 
         print('Finished training model!')
@@ -174,6 +170,7 @@ class Run:
 
             # 처음은 retrain을 스킵해야 하기 때문에
             if retrain & (j > 0):
+                self.model.load_state_dict(torch.load(self.config['train'].backbone_weight_path))
                 self.run_model(True)
                 # Needed to load best weights after retraining.
                 self.model.load_state_dict(torch.load(self.weight_path))
