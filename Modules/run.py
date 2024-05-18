@@ -203,7 +203,7 @@ class Run:
         mae = calculate_mae(self.pred['Ground Truths'].values, self.pred['Predictions'].values)
         rmse = calculate_rmse(self.pred['Ground Truths'].values, self.pred['Predictions'].values)
         ad_r2 = calculate_adjusted_r2_score(self.pred['Ground Truths'].values, self.pred['Predictions'].values, 20, 2)
-        r2=calculate_r2_score(self.pred['Ground Truths'].values, self.pred['Predictions'].values)
+        r2 = calculate_r2_score(self.pred['Ground Truths'].values, self.pred['Predictions'].values)
         self.pred.loc[len(self.pred)] = [0, ad_r2]
         self.pred.loc[len(self.pred)] = [mae, rmse]
         self.pred.to_csv(self.saving_path)
