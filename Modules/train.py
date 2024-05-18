@@ -1,9 +1,8 @@
-from utils.Metrics import calculate_R2
-
 import sys
 import time
 import torch
 import pandas as pd
+from utils.Metrics import calculate_R2
 
 
 class Train_Module:
