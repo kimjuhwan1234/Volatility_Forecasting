@@ -42,7 +42,7 @@ class single_biLSTM(nn.Module):
 
     def forward(self, train, gt=None):
         out, _ = self.backbone(train)
-        # out = F.elu(self.bn(out))
+        # out = F.relu(out)
         # x, _ = self.lstm2(out)
         # x = self.bn(x)
         # out, _ = self.lstm3(x)
@@ -51,7 +51,7 @@ class single_biLSTM(nn.Module):
             out = self.additional_layer(out)
 
         output = self.fc(out)
-        # output = F.elu(self.bn(output))
+        # output = F.relu(output)
 
         output = output[:, -1, :]
 

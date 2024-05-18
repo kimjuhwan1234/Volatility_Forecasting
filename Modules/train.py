@@ -22,26 +22,25 @@ class Train_Module:
         for param_group in opt.param_groups:
             return param_group['lr']
 
-    def eval_fn(self, model, dataset_dl):
+    def eval_fn(self, model, dataset_dl, initial):
         total_loss = 0.0
         total_accuracy = 0.0
         len_data = len(dataset_dl)
 
         model.eval()
-
         with torch.no_grad():
             i = 0
             for data, gt in dataset_dl:
                 i += 1
-                self.plot_bar('Val', i, len_data)
+                if not initial:
+                    self.plot_bar('Val', i, len_data)
 
                 data = data.to(self.device)
                 gt = gt.to(self.device)
 
                 output, loss = model(data, gt)
-                total_loss += loss
 
-                # accuracy = self.calculate_adjusted_r2_score(output, gt, data.shape[1], data.shape[2])
+                total_loss += loss
                 accuracy = calculate_R2(gt, output)
                 total_accuracy += accuracy
 
@@ -70,7 +69,6 @@ class Train_Module:
             opt.step()
 
             total_loss += loss
-            # accuracy = self.calculate_adjusted_r2_score(output, gt, data.shape[1], data.shape[2])
             accuracy = calculate_R2(gt, output)
             total_accuracy += accuracy
 
@@ -92,10 +90,11 @@ class Train_Module:
         loss_history = pd.DataFrame(columns=['train', 'val'])
         accuracy_history = pd.DataFrame(columns=['train', 'val'])
 
-        val_loss, val_accuracy = self.eval_fn(model, val_dl)
+        val_loss, val_accuracy = self.eval_fn(model, val_dl, True)
         best_loss = val_loss
         start_time = time.time()
 
+        counter = 0
         for epoch in range(num_epochs):
             current_lr = self.get_lr(opt)
             print(f'Epoch {epoch + 1}/{num_epochs}, current lr={current_lr}')
@@ -104,7 +103,7 @@ class Train_Module:
             loss_history.loc[epoch, 'train'] = train_loss
             accuracy_history.loc[epoch, 'train'] = train_accuracy
 
-            val_loss, val_accuracy = self.eval_fn(model, val_dl)
+            val_loss, val_accuracy = self.eval_fn(model, val_dl, False)
             loss_history.loc[epoch, 'val'] = val_loss
             accuracy_history.loc[epoch, 'val'] = val_accuracy
 
