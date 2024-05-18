@@ -30,7 +30,7 @@ class Run:
         self.weight_path = f'Weight/Backbone/BiLSTM_BZ.pth'
 
         # Transfer learning and Backbone Model 여부에 따라 weight 저장 위치를 달리함.
-        if not self.config['model'].Transfer:
+        if self.config['model'].Transfer:
             if self.config['model'].backbone1:
                 self.weight_path = f'Weight/Backbone/BiLSTM_{self.file_path[-10:-8]}.pth'
 
