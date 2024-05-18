@@ -7,8 +7,8 @@ parser.add_argument("--hidden_size", type=int, default=64, help="hidden_size")
 parser.add_argument("--num_layers", type=int, default=2, help="num_layers")
 parser.add_argument("--output_size", type=int, default=1, help="output_size")
 
-parser.add_argument("--retrain", type=bool, default=True, help="Retrain")
-parser.add_argument("--Transfer", type=bool, default=True, help="Backbone 훈련이면 False 아니면 True")
+parser.add_argument("--retrain", type=bool, default=False, help="Retrain")
+parser.add_argument("--Transfer", type=bool, default=False, help="Backbone 훈련이면 False 아니면 True")
 parser.add_argument("--additional", type=bool, default=False, help="additional")
 parser.add_argument("--bidirectional", type=bool, default=True, help="bidirectional")
 
