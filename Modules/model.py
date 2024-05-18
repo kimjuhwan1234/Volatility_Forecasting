@@ -42,7 +42,7 @@ class single_biLSTM(nn.Module):
 
     def forward(self, train, gt=None):
         out, _ = self.backbone(train)
-        out = self.bn(out)
+        # out = self.bn(out)
         # x, _ = self.lstm2(out)
         # x = self.bn(x)
         # out, _ = self.lstm3(x)

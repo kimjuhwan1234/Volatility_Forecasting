@@ -27,7 +27,7 @@ class Run:
         self.train = pd.read_csv(self.file_path, index_col=0)
 
         self.model = self.config['structure']
-        self.weight_path = f'Weight/weight.pth'
+        self.weight_path = f'Weight/Backbone/BiLSTM_BZ.pth'
 
         # Transfer learning and Backbone Model 여부에 따라 weight 저장 위치를 달리함.
         if not self.config['model'].Transfer:
