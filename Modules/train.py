@@ -9,7 +9,7 @@ import pandas as pd
 class Train_Module:
     def __init__(self, device, patience):
         self.device = device
-        self.patience=patience
+        self.patience = patience
 
     def plot_bar(self, mode, i, len_data):
         progress = i / len_data
@@ -92,7 +92,8 @@ class Train_Module:
         loss_history = pd.DataFrame(columns=['train', 'val'])
         accuracy_history = pd.DataFrame(columns=['train', 'val'])
 
-        best_loss = float('inf')
+        val_loss, val_accuracy = self.eval_fn(model, val_dl)
+        best_loss = val_loss
         start_time = time.time()
 
         for epoch in range(num_epochs):
@@ -107,15 +108,14 @@ class Train_Module:
             loss_history.loc[epoch, 'val'] = val_loss
             accuracy_history.loc[epoch, 'val'] = val_accuracy
 
-            print(' ')
             lr_scheduler.step(val_loss)
+            print(' ')
 
             if val_loss < best_loss:
                 counter = 0
                 best_loss = val_loss
                 torch.save(model.state_dict(), weight_path)
                 print('Saved model Weight!')
-
             else:
                 counter += 1
                 if counter >= self.patience:
@@ -124,7 +124,6 @@ class Train_Module:
 
             print(f'train loss: {train_loss:.10f}, val loss: {val_loss:.10f}')
             print(f'R2: {val_accuracy:.4f}, time: {(time.time() - start_time) / 60:.2f}')
-
             print(' ')
 
         return model, loss_history, accuracy_history
