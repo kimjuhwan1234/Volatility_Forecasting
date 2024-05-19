@@ -84,6 +84,10 @@ class Run:
 
         # retraining이 True이면 마지막 레이어만 수정.
         if retraining:
+            for param in self.model.parameters():
+                param.requires_grad = False
+            for param in self.model.fc.parameters():
+                param.requires_grad = True
             opt = Adam(self.model.fc.parameters(), lr=self.lr)
             self.model.to(self.device)
 
