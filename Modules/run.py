@@ -193,7 +193,7 @@ class Run:
                         break
             j = 1
             print(f'\n{len(self.pred)}/{len(pred_index)}: {len(self.pred) / len(pred_index) * 100:.2f}%')
-            time.sleep(3)
+            time.sleep(2)
 
         self.pred.index = pred_index
         mae = calculate_mae(self.pred['Ground Truths'].values, self.pred['Predictions'].values)
