@@ -169,10 +169,10 @@ class Run:
             # 처음은 retrain을 스킵해야 하기 때문에
             if retrain & (j > 0):
                 # pretrained weight 에서 retrain을 진행하기 위해 필요.
-                self.model.load_state_dict(torch.load(self.backbone_weight_path))
+                self.model.load_state_dict(torch.load(self.weight_path))
                 self.run_model(True)
                 # Needed to load best weights after retraining.
-                self.model.load_state_dict(torch.load(self.weight_path))
+                # self.model.load_state_dict(torch.load(self.weight_path))
 
             self.model.eval()
             with ((torch.no_grad())):

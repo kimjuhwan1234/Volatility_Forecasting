@@ -32,7 +32,7 @@ parser.add_argument("--use_wandb", type=bool, default=False, help="use_wandb")
 
 parser.add_argument("--backbone_val_end", type=str, default='2005-01-01', help="date")
 parser.add_argument("--transfer_test_end", type=str, default='2024-01-01', help="date")
-parser.add_argument("--backbone_weight_path", type=str, default='Weight/Backbone/BiLSTM_BZ_SP500.pth', help="weight")
+parser.add_argument("--backbone_weight_path", type=str, default='Weight/Backbone/BiLSTM_SP_SP500.pth', help="weight")
 
 opt_train = parser.parse_args()
 print(opt_train)
@@ -53,6 +53,6 @@ if opt_model.backbone1:
     config['structure'] = backbone1
 
 if opt_model.backbone2:
-    backbone_weight_path = 'Weight/Backbone/MLP_SP.pth'
-    backbone2.load_state_dict(torch.load(backbone_weight_path))
+    if opt_model.Transfer:
+        backbone2.load_state_dict(torch.load(opt_train.backbone_weight_path))
     config['structure'] = backbone2

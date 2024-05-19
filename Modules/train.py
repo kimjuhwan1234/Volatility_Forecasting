@@ -91,6 +91,7 @@ class Train_Module:
 
         val_loss, val_accuracy = self.eval_fn(model, val_dl, True)
         best_loss = val_loss
+        best_model_wts = model.state_dict().copy()
         start_time = time.time()
 
         counter = 0
@@ -113,10 +114,12 @@ class Train_Module:
                 counter = 0
                 best_loss = val_loss
                 torch.save(model.state_dict(), weight_path)
+                best_model_wts = model.state_dict().copy()
                 print('Saved model Weight!')
             else:
                 counter += 1
                 if counter >= self.patience:
+                    model.load_state_dict(best_model_wts)
                     print("Early stopping")
                     break
 
