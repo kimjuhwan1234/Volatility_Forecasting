@@ -30,15 +30,9 @@ parser.add_argument("--patience", type=int, default=10, help="patience")
 parser.add_argument("--use_accelerator", type=bool, default=False, help="use_accelerator")
 parser.add_argument("--use_wandb", type=bool, default=False, help="use_wandb")
 
-# parser.add_argument("--backbone_train_end", type=str, default='2020-01-01', help="date")
 parser.add_argument("--backbone_val_end", type=str, default='2005-01-01', help="date")
 parser.add_argument("--transfer_test_end", type=str, default='2010-01-01', help="date")
 parser.add_argument("--backbone_weight_path", type=str, default='Weight/Backbone/BiLSTM_SP_SP500.pth', help="weight")
-# weekly 이면 backbone_val_end와 transfer_test_start차이가 최소 5달 차이.
-# monthly 이면 backbone_val_end와 transfer_test_start차이가 최소 4달 차이.
-# 60 이면 backbone_val_end와 transfer_test_start차이가 최소 3달 차이.
-# 120 부터는 backbone_val_end 이후 바로 다음 날짜에 transfer_test_start가 이어져도 됨.
-# 1997-01, 1999-01, 1999-04, 2001-01 backbone 임베딩
 
 opt_train = parser.parse_args()
 print(opt_train)
