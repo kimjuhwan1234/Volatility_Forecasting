@@ -1,0 +1,26 @@
+BiLSTM_BZ_onlyvol
+volatility 정규화O, 출력레이어 배치정규화
+
+BiLSTM_SP_onlyvol
+volatility 정규화X, model 수정X
+
+BiLSTM_BZ_SP500
+volatility 정규화O, 출력레이어 배치정규화
+
+BiLSTM_SP_SP500
+volatility 정규화O, model 수정X
+
+Retrain
+model 수정X
+
+MAE: 0.004800968963687469
+RMSE: 0.006150559574370514
+R^2: 0.6792
+
+exterior total
+0.005019943955485059
+0.006712966645015961
+0.6147
+
+9667
+9638

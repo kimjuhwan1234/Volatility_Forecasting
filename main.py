@@ -62,7 +62,7 @@ class Execution:
         for file in file_list:
             print('')
             print(f'{file} will be started...')
-            time.sleep(5)
+            time.sleep(3)
             trainer = Run(file, self.config)
             if not self.config['model'].Transfer:
                 trainer.run_model(False)
