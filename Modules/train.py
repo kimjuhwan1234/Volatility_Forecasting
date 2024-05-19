@@ -114,11 +114,11 @@ class Train_Module:
                 best_loss = val_loss
                 torch.save(model.state_dict(), weight_path)
                 print('Saved model Weight!')
-            # else:
-            #     counter += 1
-            #     if counter >= self.patience:
-            #         print("Early stopping")
-            #         break
+            else:
+                counter += 1
+                if counter >= self.patience:
+                    print("Early stopping")
+                    break
 
             print(f'train loss: {train_loss:.10f}, val loss: {val_loss:.10f}')
             print(f'R2: {val_accuracy:.4f}, time: {(time.time() - start_time) / 60:.2f}')

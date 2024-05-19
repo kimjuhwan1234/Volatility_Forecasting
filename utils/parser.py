@@ -55,7 +55,7 @@ config['train'] = opt_train
 
 if opt_model.backbone1:
     if opt_model.Transfer:
-        backbone_weight_path = 'Weight/Backbone/BiLSTM_BZ.pth'
+        backbone_weight_path = 'Weight/Backbone/BiLSTM_SP_onlyvol.pth'
         backbone1.load_state_dict(torch.load(backbone_weight_path))
     config['structure'] = backbone1
 

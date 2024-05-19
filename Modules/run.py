@@ -30,7 +30,7 @@ class Run:
         self.weight_path = f'Weight/Backbone/BiLSTM_BZ.pth'
 
         # Transfer learning and Backbone Model 여부에 따라 weight 저장 위치를 달리함.
-        if self.config['model'].Transfer:
+        if not self.config['model'].Transfer:
             if self.config['model'].backbone1:
                 self.weight_path = f'Weight/Backbone/BiLSTM_{self.file_path[-10:-8]}.pth'
 
@@ -151,7 +151,6 @@ class Run:
 
         # 처음 while문 들어갈때는 test_dl이 없으므로 만들어 줘야 함. 또한 retrain을 하지 않을 때를 위해서 필요함.
         self.test_data = self.train.loc[self.config['train'].backbone_val_end:self.config['train'].transfer_test_end]
-        # self.test_data = self.train.iloc[-40:]
         self.test_dataset = TestDataset(self.test_data)
         self.test_dl = DataLoader(self.test_dataset, batch_size=1, shuffle=False)
 
