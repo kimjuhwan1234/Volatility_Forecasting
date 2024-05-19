@@ -27,20 +27,14 @@ class Run:
         self.train = pd.read_csv(self.file_path, index_col=0)
 
         self.model = self.config['structure']
-        self.weight_path = f'Weight/Backbone/BiLSTM_BZ.pth'
 
-        # Transfer learning and Backbone Model 여부에 따라 weight 저장 위치를 달리함.
-        if not self.config['model'].Transfer:
-            if self.config['model'].backbone1:
-                self.weight_path = f'Weight/Backbone/BiLSTM_{self.file_path[-10:-8]}.pth'
-
-            if self.config['model'].backbone2:
-                self.weight_path = f'Weight/Backbone/MLP_{self.file_path[-10:-8]}.pth'
-
+        # Backbone Model 여부에 따라 weight 저장 위치를 달리함.
         if self.config['model'].backbone1:
+            self.weight_path = f'Weight/Backbone/BiLSTM_{self.file_path[-10:-8]}.pth'
             self.saving_path = f'Files/BiLSTM/additionalX_{self.file_path[-10:-8]}.csv'
 
         if self.config['model'].backbone2:
+            self.weight_path = f'Weight/Backbone/MLP_{self.file_path[-10:-8]}.pth'
             self.saving_path = f'Files/MLP/additionalX_{self.file_path[-10:-8]}.csv'
 
     def load_data(self, retraining):
@@ -61,7 +55,7 @@ class Run:
 
         # retraining 할때 설정.
         if retraining:
-            # validation이 끝나는 시점부터 retrain data로 사용함.
+            # validation이 끝나는 시점까지 retrain data로 사용함.
             data = self.train.loc['2001-01-01':self.test_index]
             train_data, val_data = train_test_split(data, test_size=0.2, random_state=42, shuffle=False)
             train_dataset = CustomDataset(train_data)
@@ -89,12 +83,12 @@ class Run:
 
         self.load_data(retraining)
 
-        # retraining이 True이면 self.model이 이미 선언되었을 것임.
+        # retraining이 True이면 마지막 레이어만 수정.
         if retraining:
             opt = Adam(self.model.fc.parameters(), lr=self.lr)
             self.model.to(self.device)
 
-        # retraining이 False이면 self.model이 없기 때문에 선언해줘야 함.
+        # retraining이 False이면 전체 레이어 수정.
         if not retraining:
             opt = Adam(self.model.parameters(), lr=self.lr)
             self.model.to(self.device)
@@ -169,6 +163,7 @@ class Run:
 
             # 처음은 retrain을 스킵해야 하기 때문에
             if retrain & (j > 0):
+                # pretrained weight 에서 retrain을 진행하기 위해 필요.
                 self.model.load_state_dict(torch.load(self.config['train'].backbone_weight_path))
                 self.run_model(True)
                 # Needed to load best weights after retraining.
@@ -184,10 +179,7 @@ class Run:
                     self.pred.loc[len(self.pred)] = [output, gt]
 
                     # 마지막 시행은 retrain if 문안으로 들어가면 안됨. total로 방지.
-
                     total = (len(self.pred)) / len(pred_index) * 100
-                    # (len(self.pred) % 60 == 0) &
-                    # Retrain 주기 바꾸는 곳
                     if retrain & (total < 100):
                         '''이 부분에서 self.test_index를 저장하는데 retrain_index를 사용해야 2006-01-01부터 100일 이후 날짜가
                         저장됨. <=> 주기의 마지막 날짜 -20 과 동치.'''
@@ -201,10 +193,7 @@ class Run:
         self.pred.index = pred_index
         mae = calculate_mae(self.pred['Ground Truths'].values, self.pred['Predictions'].values)
         rmse = calculate_rmse(self.pred['Ground Truths'].values, self.pred['Predictions'].values)
-        ad_r2 = calculate_adjusted_r2_score(self.pred['Ground Truths'].values, self.pred['Predictions'].values, 20, 2)
         r2 = calculate_r2_score(self.pred['Ground Truths'].values, self.pred['Predictions'].values)
-        self.pred.loc[len(self.pred)] = [0, ad_r2]
-        self.pred.loc[len(self.pred)] = [mae, rmse]
         self.pred.to_csv(self.saving_path)
 
         print(' ')
@@ -212,5 +201,4 @@ class Run:
         print(f'MAE: {mae}')
         print(f'RMSE: {rmse}')
         print(f'R^2: {r2:.4f}')
-        print(f'adjusted-R^2: {ad_r2:.4f}')
         print(f"Saved Result in {self.saving_path}!")

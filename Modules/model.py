@@ -51,7 +51,7 @@ class single_biLSTM(nn.Module):
             out = self.additional_layer(out)
 
         output = self.fc(out)
-        output = F.elu(self.bn(output))
+        # output = F.elu(self.bn(output))
 
         output = output[:, -1, :]
 
