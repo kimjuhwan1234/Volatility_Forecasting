@@ -7,7 +7,7 @@ parser.add_argument("--hidden_size", type=int, default=64, help="hidden_size")
 parser.add_argument("--num_layers", type=int, default=2, help="num_layers")
 parser.add_argument("--output_size", type=int, default=1, help="output_size")
 
-parser.add_argument("--retrain", type=bool, default=False, help="Retrain")
+parser.add_argument("--retrain", type=bool, default=True, help="Retrain")
 parser.add_argument("--Transfer", type=bool, default=True, help="Backbone 훈련이면 False 아니면 True")
 parser.add_argument("--additional", type=bool, default=False, help="additional")
 parser.add_argument("--bidirectional", type=bool, default=True, help="bidirectional")
@@ -31,8 +31,8 @@ parser.add_argument("--use_accelerator", type=bool, default=False, help="use_acc
 parser.add_argument("--use_wandb", type=bool, default=False, help="use_wandb")
 
 parser.add_argument("--backbone_val_end", type=str, default='2005-01-01', help="date")
-parser.add_argument("--transfer_test_end", type=str, default='2023-01-01', help="date")
-parser.add_argument("--backbone_weight_path", type=str, default='Weight/Backbone/BiLSTM_SP_SP500.pth', help="weight")
+parser.add_argument("--transfer_test_end", type=str, default='2024-01-01', help="date")
+parser.add_argument("--backbone_weight_path", type=str, default='Weight/Backbone/BiLSTM_BZ_SP500.pth', help="weight")
 
 opt_train = parser.parse_args()
 print(opt_train)
@@ -49,8 +49,7 @@ config['train'] = opt_train
 
 if opt_model.backbone1:
     if opt_model.Transfer:
-        backbone_weight_path = 'Weight/Backbone/BiLSTM_BZ_SP500.pth'
-        backbone1.load_state_dict(torch.load(backbone_weight_path))
+        backbone1.load_state_dict(torch.load(opt_train.backbone_weight_path))
     config['structure'] = backbone1
 
 if opt_model.backbone2:

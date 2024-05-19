@@ -26,6 +26,7 @@ class Run:
         self.train = pd.read_csv(self.file_path, index_col=0)
 
         self.model = self.config['structure']
+        self.backbone_weight_path = self.config['train'].backbone_weight_path
 
         # Backbone Model 여부에 따라 weight 저장 위치를 달리함.
         if self.config['model'].backbone1:
@@ -168,7 +169,7 @@ class Run:
             # 처음은 retrain을 스킵해야 하기 때문에
             if retrain & (j > 0):
                 # pretrained weight 에서 retrain을 진행하기 위해 필요.
-                self.model.load_state_dict(torch.load(self.config['train'].backbone_weight_path))
+                self.model.load_state_dict(torch.load(self.backbone_weight_path))
                 self.run_model(True)
                 # Needed to load best weights after retraining.
                 self.model.load_state_dict(torch.load(self.weight_path))
@@ -201,7 +202,7 @@ class Run:
         self.pred.to_csv(self.saving_path)
 
         print(' ')
-        print(f'Model: {self.weight_path}')
+        print(f'Model: {self.backbone_weight_path}')
         print(f'MAE: {mae}')
         print(f'RMSE: {rmse}')
         print(f'R^2: {r2:.4f}')
