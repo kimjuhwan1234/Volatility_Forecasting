@@ -1,3 +1,7 @@
+import time
+import torch
+import pandas as pd
+import matplotlib.pyplot as plt
 from utils.Metrics import *
 from Modules.train import *
 from torch.optim import Adam
@@ -6,11 +10,6 @@ from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 from Modules.dataset import CustomDataset, TestDataset
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-import time
-import torch
-import pandas as pd
-import torch.nn as nn
-import matplotlib.pyplot as plt
 
 
 class Run:
@@ -156,6 +155,7 @@ class Run:
         self_data.index를 사용하면 안됨.'''
         retrain_index = self.test_data.index
         self.model.to(self.device)
+        # self.model.load_state_dict(torch.load(self.weight_path))
 
         j = 0
         # 총 예측 가능 날짜만큼 pred가 쌓이면 종료 됨.
