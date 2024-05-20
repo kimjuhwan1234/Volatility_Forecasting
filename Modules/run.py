@@ -1,6 +1,3 @@
-import time
-import torch
-import pandas as pd
 import matplotlib.pyplot as plt
 from utils.Metrics import *
 from Modules.train import *
@@ -101,12 +98,12 @@ class Run:
         parameters = {
             'num_epochs': self.epochs,
             'weight_path': self.weight_path,
-            'backbone_weight_path': self.weight_path,
+            'backbone_weight_path': self.backbone_weight_path,
 
             'train_dl': self.dataloaders['train'],
             'val_dl': self.dataloaders['val'],
 
-            'patience':self.config['train'].patience,
+            'patience': self.config['train'].patience,
             'optimizer': opt,
             'lr_scheduler': lr_scheduler,
         }

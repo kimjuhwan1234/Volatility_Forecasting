@@ -1,5 +1,7 @@
 import sys
 import time
+
+import numpy as np
 import torch
 import pandas as pd
 from utils.Metrics import calculate_R2
@@ -90,14 +92,17 @@ class Train_Module:
         loss_history = pd.DataFrame(columns=['train', 'val'])
         accuracy_history = pd.DataFrame(columns=['train', 'val'])
 
+        # best_loss=np.inf
         val_loss1, val_accuracy = self.eval_fn(model, val_dl, True)
         model.load_state_dict(torch.load(backbone_weight_path))
         val_loss2, val_accuracy = self.eval_fn(model, val_dl, True)
 
         if val_loss1 > val_loss2:
+            print('backbone')
             best_loss = val_loss2
             best_model_wts = torch.load(backbone_weight_path)
         else:
+            print('retrain')
             best_loss = val_loss1
             best_model_wts = torch.load(weight_path)
             model.load_state_dict(best_model_wts)
