@@ -23,10 +23,10 @@ parser.add_argument("--model_saving_strategy", type=str, default='better', help=
 parser.add_argument("--seed", type=int, default=0, help="seed")
 parser.add_argument("--num_workers", type=int, default=4, help="num_workers")
 parser.add_argument("--device", type=str, default='cuda', help="device")
-parser.add_argument("--epochs", type=int, default=100, help="epochs")
+parser.add_argument("--epochs", type=int, default=300, help="epochs")
 parser.add_argument("--batch_size", type=int, default=32, help="batch_size")
 parser.add_argument("--lr", type=float, default=0.001, help="learning rate")
-parser.add_argument("--patience", type=int, default=10, help="patience")
+parser.add_argument("--patience", type=int, default=5, help="patience")
 parser.add_argument("--use_accelerator", type=bool, default=False, help="use_accelerator")
 parser.add_argument("--use_wandb", type=bool, default=False, help="use_wandb")
 

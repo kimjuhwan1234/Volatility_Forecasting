@@ -6,9 +6,8 @@ from utils.Metrics import calculate_R2
 
 
 class Train_Module:
-    def __init__(self, device, patience):
+    def __init__(self, device):
         self.device = device
-        self.patience = patience
 
     def plot_bar(self, mode, i, len_data):
         progress = i / len_data
@@ -79,19 +78,30 @@ class Train_Module:
     def train_and_eval(self, model, params):
         num_epochs = params['num_epochs']
         weight_path = params["weight_path"]
+        backbone_weight_path = params['backbone_weight_path']
 
         train_dl = params["train_dl"]
         val_dl = params["val_dl"]
 
+        patience = params['patience']
         opt = params["optimizer"]
         lr_scheduler = params["lr_scheduler"]
 
         loss_history = pd.DataFrame(columns=['train', 'val'])
         accuracy_history = pd.DataFrame(columns=['train', 'val'])
 
-        val_loss, val_accuracy = self.eval_fn(model, val_dl, True)
-        best_loss = val_loss
-        best_model_wts = model.state_dict().copy()
+        val_loss1, val_accuracy = self.eval_fn(model, val_dl, True)
+        model.load_state_dict(torch.load(backbone_weight_path))
+        val_loss2, val_accuracy = self.eval_fn(model, val_dl, True)
+
+        if val_loss1 > val_loss2:
+            best_loss = val_loss2
+            best_model_wts = torch.load(backbone_weight_path)
+        else:
+            best_loss = val_loss1
+            best_model_wts = torch.load(weight_path)
+            model.load_state_dict(best_model_wts)
+
         start_time = time.time()
 
         counter = 0
@@ -118,7 +128,7 @@ class Train_Module:
                 print('Saved model Weight!')
             else:
                 counter += 1
-                if counter >= self.patience:
+                if counter >= patience:
                     model.load_state_dict(best_model_wts)
                     print("Early stopping")
                     break

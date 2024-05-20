@@ -101,15 +101,17 @@ class Run:
         parameters = {
             'num_epochs': self.epochs,
             'weight_path': self.weight_path,
+            'backbone_weight_path': self.weight_path,
 
             'train_dl': self.dataloaders['train'],
             'val_dl': self.dataloaders['val'],
 
+            'patience':self.config['train'].patience,
             'optimizer': opt,
             'lr_scheduler': lr_scheduler,
         }
 
-        TM = Train_Module(self.device, self.config['train'].patience)
+        TM = Train_Module(self.device)
         self.model, self.loss_hist, self.metric_hist = TM.train_and_eval(self.model, parameters)
 
         print('Finished training model!')
