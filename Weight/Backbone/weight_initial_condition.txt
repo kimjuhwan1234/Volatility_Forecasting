@@ -2,7 +2,7 @@ BiLSTM_BZ_onlyvol
 volatility 정규화O, model 수정X
 
 BiLSTM_SP_onlyvol
-volatility 정규화X, model 수정X
+volatility 정규화O, model 수정X
 
 BiLSTM_BZ_SP500
 volatility 정규화O, model 수정X
@@ -12,3 +12,5 @@ volatility 정규화O, model 수정X
 
 Retrain
 model 수정X
+
+BiLSTM_MZ.pth는 결과 뽑을 때마다 원래 backbone으로 교체하고 진행!
