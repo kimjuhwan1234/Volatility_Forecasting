@@ -92,7 +92,7 @@ class Train_Module:
         loss_history = pd.DataFrame(columns=['train', 'val'])
         accuracy_history = pd.DataFrame(columns=['train', 'val'])
 
-        # best_loss=np.inf
+        best_loss = np.inf
         val_loss1, val_accuracy = self.eval_fn(model, val_dl, True)
         model.load_state_dict(torch.load(backbone_weight_path))
         val_loss2, val_accuracy = self.eval_fn(model, val_dl, True)
