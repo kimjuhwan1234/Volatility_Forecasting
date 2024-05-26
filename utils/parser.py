@@ -30,8 +30,8 @@ parser.add_argument("--patience", type=int, default=10, help="patience")
 parser.add_argument("--use_accelerator", type=bool, default=False, help="use_accelerator")
 parser.add_argument("--use_wandb", type=bool, default=False, help="use_wandb")
 
-parser.add_argument("--backbone_val_end", type=str, default='1999-01-01', help="date")
-parser.add_argument("--transfer_test_end", type=str, default='2001-12-01', help="date")
+parser.add_argument("--backbone_val_end", type=str, default='2005-01-01', help="date")
+parser.add_argument("--transfer_test_end", type=str, default='2024-01-01', help="date")
 parser.add_argument("--backbone_weight_path", type=str, default='Weight/Backbone/BiLSTM_SP.pth', help="weight")
 
 opt_train = parser.parse_args()
