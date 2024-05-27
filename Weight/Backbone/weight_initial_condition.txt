@@ -1,3 +1,7 @@
+Namespace(input_size=3, hidden_size=64, num_layers=2, output_size=1, retrain=False, Transfer=False, additional=False, bidirectional=True, backbone1=True, backbone2=False)
+Namespace(model_saving_strategy='better', seed=0, num_workers=4, device='cuda', epochs=50, batch_size=32, lr=0.001, patience=10, use_accelerator=False, use_wandb=False, backbone_val_end='2005-01-01', transfer_test_end='2024-01-01', backbone_weight_path='Weight/Backbone/BiLSTM_BZ.pth')
+
+
 BiLSTM_BZ_onlyvol
 volatility 정규화O, model 수정X
 
